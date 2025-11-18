@@ -6,4 +6,6 @@ yfinance
 matplotlib
 requests
 scikit-learn
+ta
+
 

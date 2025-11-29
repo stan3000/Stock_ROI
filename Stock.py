@@ -33,6 +33,110 @@ menu = st.sidebar.radio(
      ]  # ✅ add this line
 )
 
+# ======================================================================TRADING PERIOD
+import datetime as dt
+
+## ============================================================
+# 🕒 REAL-TIME TRADING WINDOW ANALYZER (PST)
+# ============================================================
+with st.sidebar.expander("⏱️ Best Trading Time Windows (PST)", expanded=True):
+
+    # Convert local time to PST
+    now_utc = dt.datetime.utcnow()
+    now_pst = now_utc - dt.timedelta(hours=8)
+    current_time = now_pst.time()
+
+    # ------------------------------------------------------------
+    # FIXED: Automatic TEXT COLOR for yellow (#f1c40f)
+    # ------------------------------------------------------------
+    def color_block(text, bg):
+        text_color = "black" if bg == "#f1c40f" else "white"
+        return f"""
+        <div style="
+            background:{bg};
+            padding:8px 12px;
+            border-radius:8px;
+            margin-bottom:8px;
+            color:{text_color};
+            font-weight:600;
+            font-size:13px;">
+            {text}
+        </div>
+        """
+
+    # Determine current trading phase
+    status_block = ""
+
+    # 🟢 Optimal Trading Window: 6:30–7:00 & 12:45–1:00
+    if dt.time(6,30) <= current_time <= dt.time(7,0):
+        status_block = color_block("🟢 Optimal Window: Opening Momentum", "#27ae60")
+    elif dt.time(12,45) <= current_time <= dt.time(13,0):
+        status_block = color_block("🟢 Optimal Window: Power-Hour Rally", "#27ae60")
+
+    # 🟡 Caution Window
+    elif dt.time(7,0) <= current_time <= dt.time(7,30):
+        status_block = color_block("🟡 Caution: Trend Confirmation Zone", "#f1c40f")
+    elif dt.time(10,0) <= current_time <= dt.time(10,30):
+        status_block = color_block("🟡 Caution: Mid-Morning Reversal Zone", "#f1c40f")
+
+    # 🔴 Avoid Window
+    elif dt.time(12,0) <= current_time <= dt.time(13,0):
+        status_block = color_block("🔴 Avoid: Lunchtime Low Liquidity", "#e74c3c")
+
+    # Neutral
+    else:
+        status_block = color_block("⚪ Neutral Time — Trade Only With Clear Signals", "#7f8c8d")
+
+    st.markdown("### 🕒 Current Status")
+    st.markdown(status_block, unsafe_allow_html=True)
+
+    # ============================================================
+    # STATIC SCHEDULE LIST
+    # ============================================================
+    st.markdown("### 📅 Full Trading Schedule (PST)")
+
+    # 🟢 Opening
+    st.markdown(color_block(
+        "🟢 <b>6:30–7:00 AM — Opening Momentum Window</b><br>Best for scalping, breakouts.",
+        "#27ae60"), unsafe_allow_html=True)
+
+    # 🟡 Trend Confirmation
+    st.markdown(color_block(
+        "🟡 <b>7:00–7:30 AM — Trend Confirmation</b><br>Wait for VWAP/EMA confirmation.",
+        "#f1c40f"), unsafe_allow_html=True)
+
+    # 🟡 Reversal Zone
+    st.markdown(color_block(
+        "🟡 <b>10:00–10:30 AM — Reversal Zone</b><br>Watch carefully: fakeouts possible.",
+        "#f1c40f"), unsafe_allow_html=True)
+
+    # 🔴 Lunchtime Chop
+    st.markdown(color_block(
+        "🔴 <b>12:00–1:00 PM — Lunchtime Chop</b><br>Avoid new entries — low liquidity.",
+        "#e74c3c"), unsafe_allow_html=True)
+
+    # 🟢 Power Hour Setup
+    st.markdown(color_block(
+        "🟢 <b>12:45–1:00 PM — Power Hour Setup</b><br>Momentum returns into the close.",
+        "#27ae60"), unsafe_allow_html=True)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 # ============================= MENU ENDS HERE
 
 # =====================================================================
@@ -2179,22 +2283,63 @@ def power_roi_daytrading():
 
 
     # --- Unified Mode Toggle ---
-    st.markdown("#### 🎛️ Position Entry Mode")
-    mode = st.radio("Select Input Type", ["🧾 By Contracts", "💵 By Amount"],
-                    horizontal=True, key=f"entry_mode_{st.session_state['active_page_key']}")
+    # st.markdown("#### 🎛️ Position Entry Mode")
+    # mode = st.radio("Select Input Type", ["🧾 By Contracts", "💵 By Amount"],
+    #                 horizontal=True, key=f"entry_mode_{st.session_state['active_page_key']}")
+    #
+    # # --- Primary Input Row (Compact + Aligned) ---
+    # c1, c2, c3 = st.columns(3)
+    # with c1:
+    #     if mode == "🧾 By Contracts":
+    #         contracts = st.number_input("🧾 Number of Contracts", 1, 1000, 1,
+    #                                     key=f"contracts_input_{st.session_state['active_page_key']}")
+    #         invest_amount = contracts * 100
+    #     else:
+    #         invest_amount = st.number_input("💵 Amount to Invest ($)", 100.0, 500000.0, 1000.0, 50.0,
+    #                                         key=f"amount_input_{st.session_state['active_page_key']}")
+    #         contracts = 1
 
-    # --- Primary Input Row (Compact + Aligned) ---
+    # ================================================================================================== PART 1
+
+    # --- Position Entry Mode (Same Line Layout) ---
+    c1, c2 = st.columns([1, 3])  # Adjust ratio as needed
+
+    with c1:
+        st.markdown("#### 🎛️ Position Entry Mode")
+
+    with c2:
+        mode = st.radio(
+            "",
+            ["🧾 By Contracts", "💵 By Amount"],
+            horizontal=True,
+            key=f"entry_mode_{st.session_state['active_page_key']}"
+        )
+
+    # --- Primary Input Row (Aligned Below) ---
     c1, c2, c3 = st.columns(3)
+
     with c1:
         if mode == "🧾 By Contracts":
-            contracts = st.number_input("🧾 Number of Contracts", 1, 1000, 1,
-                                        key=f"contracts_input_{st.session_state['active_page_key']}")
+            contracts = st.number_input(
+                "🧾 Number of Contracts",
+                min_value=1,
+                max_value=1000,
+                value=1,
+                key=f"contracts_input_{st.session_state['active_page_key']}"
+            )
             invest_amount = contracts * 100
         else:
-            invest_amount = st.number_input("💵 Amount to Invest ($)", 100.0, 500000.0, 1000.0, 50.0,
-                                            key=f"amount_input_{st.session_state['active_page_key']}")
+            invest_amount = st.number_input(
+                "💵 Amount to Invest ($)",
+                min_value=100.0,
+                max_value=500000.0,
+                value=1000.0,
+                step=50.0,
+                key=f"amount_input_{st.session_state['active_page_key']}"
+            )
             contracts = 1
 
+    # =====================================ENDS HERE
     with c2:
         premium = st.number_input("💵 Entry Premium per Contract ($)", 0.01, 200.0, 2.15, 0.01,
                                   key=f"premium_input_{st.session_state['active_page_key']}")
@@ -2387,7 +2532,8 @@ def power_roi_daytrading():
 
         # --- DAY TRADER MOMENTUM INSIGHT ---
 
- # ==========================================================================================================================
+
+    # ==========================================================================================================================
  #        CONFIRMATION TRADER CALL ENTRY
 # =====================================================================================================================
 #         # ======================================================================
@@ -2456,10 +2602,165 @@ def power_roi_daytrading():
                 # ENTRY AND EXIT CHECKLIST
         # ==============================================================================
 
+        # st.markdown("## 🔥 CALL Entry Checklist")
+        # # ======================================================================
+        # # 🚀 CALL ENTRY & EXIT CHECKLIST (BASED ON CHART LINES)
+        # # ======================================================================
+        # with st.expander("## 🔥 DAY TRADING CALL Entry Decision System"):
+        #     st.markdown("## 🚀 CALL ENTRY & EXIT CHECKLIST")
+        #
+        #     # ---------- CSS ----------
+        #     st.markdown(
+        #         """
+        #         <style>
+        #         .check-card {
+        #             background: rgba(255,255,255,0.04);
+        #             border-radius: 16px;
+        #             border: 1px solid rgba(255,255,255,0.12);
+        #             padding: 18px 20px;
+        #             margin-top: 10px;
+        #             box-shadow: 0 8px 18px rgba(0,0,0,0.35);
+        #         }
+        #         .check-header {
+        #             font-size: 20px;
+        #             font-weight: 700;
+        #             margin-bottom: 6px;
+        #         }
+        #         .check-sub {
+        #             font-size: 13px;
+        #             opacity: 0.8;
+        #             margin-bottom: 10px;
+        #         }
+        #         .status-pill {
+        #             display: inline-block;
+        #             padding: 4px 10px;
+        #             border-radius: 999px;
+        #             font-size: 12px;
+        #             font-weight: 600;
+        #             letter-spacing: 0.03em;
+        #         }
+        #         </style>
+        #         """,
+        #         unsafe_allow_html=True
+        #     )
+        #
+        #     # ---------- LAYOUT ----------
+        #     left_col, right_col = st.columns(2)
+        #
+        #     # ================== ENTRY CHECKLIST ==================
+        #     with left_col:
+        #         st.markdown(
+        #             "<div class='check-card'>"
+        #             "<div class='check-header'>🟢 PRO CALL ENTRY (Your Chart Setup)</div>"
+        #             "<div class='check-sub'>Use your colored lines to confirm a high-probability CALL.</div>",
+        #             unsafe_allow_html=True,
+        #         )
+        #
+        #         # e1 = st.checkbox("✔ Price is bouncing off **White/Gray horizontal support**")
+        #         e2 = st.checkbox("✔ Candle Price CLOSED above **BLUE EMA 9** (fast trend)")
+        #         e3 = st.checkbox("✔ **BLUE EMA 9 > RED EMA 21** (bullish EMA stack)")
+        #         e4 = st.checkbox("✔ Price is **above or bouncing off YELLOW SMA 50**")
+        #         e5 = st.checkbox("✔ **PURPLE AAPL stock line is rising** (stock trending up)")
+        #
+        #         # 🚀 ADDED VWAP — DO NOT CHANGE ORDER OR TEXT
+        #         e6 = st.checkbox("✔ Price is **above VWAP (White dashed line)** → intraday bullish confirmation")
+        #
+        #         entry_checks = [e2, e3, e4, e5, e6]
+        #         entry_score = sum(entry_checks)
+        #         entry_pct = (entry_score / 5) * 100
+        #
+        #         entry_ok = all(entry_checks)
+        #
+        #         entry_color = "#27e08d" if entry_ok else "#ff4d4d"
+        #         entry_text = "ENTRY READY — High-Probability CALL Setup" if entry_ok else "ENTRY BLOCKED — Conditions Not Fully Met"
+        #
+        #         st.progress(entry_pct / 100)
+        #
+        #         st.markdown(
+        #             f"""
+        #             <div style='margin-top:10px; text-align:center;'>
+        #                 <span class='status-pill' style='background:{entry_color}22; color:{entry_color}; border:1px solid {entry_color};'>
+        #                     {entry_text}
+        #                 </span>
+        #                 <div style='margin-top:6px; font-size:13px; opacity:0.8;'>
+        #                     Checklist: <b>{entry_score}/5</b> ({entry_pct:.0f}%)
+        #                 </div>
+        #             </div>
+        #             </div>
+        #             """,
+        #             unsafe_allow_html=True,
+        #         )
+        #
+        #     # ================== EXIT / PROFIT CHECKLIST ==================
+        #     with right_col:
+        #         st.markdown(
+        #             "<div class='check-card'>"
+        #             "<div class='check-header'>💰 CALL EXIT & PROFIT RULES</div>"
+        #             "<div class='check-sub'>Use the same lines as dynamic profit targets.</div>",
+        #             unsafe_allow_html=True,
+        #         )
+        #
+        #         x1 = st.checkbox("✔ TP1 hit: Price starts closing **back below BLUE EMA 9** (lock 20–30%)")
+        #         x2 = st.checkbox("✔ TP2 near: Price is approaching **RED EMA 21** (take 40–50%)")
+        #         x3 = st.checkbox("✔ TP3 near: Price has reached / tagged **YELLOW SMA 50** (unload remaining)")
+        #         x4 = st.checkbox(
+        #             "✔ TP4: **PURPLE stock line goes parabolic** (vertical spike → exhaustion, sell everything)")
+        #
+        #         # 🚀 ADDED VWAP EXIT CHECK
+        #         x5 = st.checkbox("✔ Price breaks BELOW VWAP (White dashed line) → intraday momentum reversing")
+        #
+        #         exit_checks = [x1, x2, x3, x4, x5]
+        #         exit_score = sum(exit_checks)
+        #         exit_pct = (exit_score / 5) * 100
+        #
+        #         exit_signal = any(exit_checks)
+        #
+        #         exit_color = "#ffb84d" if exit_signal else "#27e08d"
+        #         exit_text = "EXIT / TAKE PROFIT SIGNAL ACTIVE" if exit_signal else "NO EXIT SIGNAL — Trend Still Healthy"
+        #
+        #         st.progress(exit_pct / 100)
+        #
+        #         st.markdown(
+        #             f"""
+        #             <div style='margin-top:10px; text-align:center;'>
+        #                 <span class='status-pill' style='background:{exit_color}22; color:{exit_color}; border:1px solid {exit_color};'>
+        #                     {exit_text}
+        #                 </span>
+        #                 <div style='margin-top:6px; font-size:13px; opacity:0.8;'>
+        #                     Triggers: <b>{exit_score}/5</b> ({exit_pct:.0f}%)
+        #                 </div>
+        #             </div>
+        #             </div>
+        #             """,
+        #             unsafe_allow_html=True,
+        #         )
+        #
+        #     # ================== SUMMARY BANNER ==================
+        #     st.markdown("---")
+        #
+        #     if entry_ok and not exit_signal:
+        #         overall_msg = "✅ **Best Zone:** Fresh CALL entry or manage open calls with trend intact."
+        #     elif entry_ok and exit_signal:
+        #         overall_msg = "⚠️ **Mixed:** Setup good but exits are triggering — reduce size."
+        #     elif (not entry_ok) and exit_signal:
+        #         overall_msg = "⛔ **No New Calls:** Exit signals firing — avoid entries."
+        #     else:
+        #         overall_msg = "🟡 **Wait:** No strong entry or exit signals — be patient."
+        #
+        #     st.markdown(
+        #         f"""
+        #         <div style='margin-top:8px; padding:16px; border-radius:14px;
+        #                     background:rgba(255,255,255,0.02); border:1px dashed rgba(255,255,255,0.18);'>
+        #             {overall_msg}
+        #         </div>
+        #         """,
+        #         unsafe_allow_html=True,
+        #     )
+
+# ===================================================================================================================== EBTRY CONFIRMATION
+
         st.markdown("## 🔥 CALL Entry Checklist")
-        # ======================================================================
-        # 🚀 CALL ENTRY & EXIT CHECKLIST (BASED ON CHART LINES)
-        # ======================================================================
+
         with st.expander("## 🔥 DAY TRADING CALL Entry Decision System"):
             st.markdown("## 🚀 CALL ENTRY & EXIT CHECKLIST")
 
@@ -2493,37 +2794,66 @@ def power_roi_daytrading():
                     font-weight: 600;
                     letter-spacing: 0.03em;
                 }
+                .caption {
+                    font-size: 12px;
+                    opacity: 0.65;
+                    margin-top: -6px;
+                    margin-bottom: 6px;
+                }
                 </style>
                 """,
                 unsafe_allow_html=True
             )
 
-            # ---------- LAYOUT ----------
             left_col, right_col = st.columns(2)
 
             # ================== ENTRY CHECKLIST ==================
             with left_col:
                 st.markdown(
                     "<div class='check-card'>"
-                    "<div class='check-header'>🟢 PRO CALL ENTRY (Your Chart Setup)</div>"
-                    "<div class='check-sub'>Use your colored lines to confirm a high-probability CALL.</div>",
+                    "<div class='check-header'>🟢 PRO CALL ENTRY (Sybest Sniper Model)</div>"
+                    "<div class='check-sub'>Core rules required before taking a CALL entry.</div>",
                     unsafe_allow_html=True,
                 )
 
-                # e1 = st.checkbox("✔ Price is bouncing off **White/Gray horizontal support**")
-                e2 = st.checkbox("✔ Candle Price CLOSED above **BLUE EMA 9** (fast trend)")
-                e3 = st.checkbox("✔ **BLUE EMA 9 > RED EMA 21** (bullish EMA stack)")
-                e4 = st.checkbox("✔ Price is **above or bouncing off YELLOW SMA 50**")
-                e5 = st.checkbox("✔ **PURPLE AAPL stock line is rising** (stock trending up)")
+                # -------- New Simplified Professional Rules --------
 
-                # 🚀 ADDED VWAP — DO NOT CHANGE ORDER OR TEXT
-                e6 = st.checkbox("✔ Price is **above VWAP (White dashed line)** → intraday bullish confirmation")
+                e1 = st.checkbox("✔ CALL ZONE Active")
+                st.markdown("<div class='caption'>Bullish environment — sellers exhausted.</div>",
+                            unsafe_allow_html=True)
 
-                entry_checks = [e2, e3, e4, e5, e6]
+                e2 = st.checkbox("✔ HL (Higher Low) Printed")
+                st.markdown("<div class='caption'>Shows buyers stepping in at higher levels.</div>",
+                            unsafe_allow_html=True)
+
+                e3 = st.checkbox("✔ HH (Higher High) Printed")
+                st.markdown("<div class='caption'>Break of previous high → continuation signal.</div>",
+                            unsafe_allow_html=True)
+
+                e4 = st.checkbox("✔ EMA 9 (BLUE) > EMA 21 (RED) (Momentum Flip)")
+                st.markdown("<div class='caption'>Trend shift: momentum is bullish.</div>", unsafe_allow_html=True)
+
+                e5 = st.checkbox("✔ Price Above EMA 9 (BLUE)")
+                st.markdown("<div class='caption'>Immediate buyer control — strong entry timing.</div>",
+                            unsafe_allow_html=True)
+
+                e6 = st.checkbox("✔ 1m Timeframe = CALL")
+                st.markdown("<div class='caption'>Micro-trend aligned for entry timing.</div>", unsafe_allow_html=True)
+
+                e7 = st.checkbox("✔ 5m Timeframe = CALL")
+                st.markdown("<div class='caption'>Macro intraday trend aligned → highest accuracy.</div>",
+                            unsafe_allow_html=True)
+
+                e8 = st.checkbox("✔ SNIPER CALL Signal (Optional)")
+                st.markdown("<div class='caption'>Ultra-confirmation (not required but very strong).</div>",
+                            unsafe_allow_html=True)
+
+                # Score Only First 7 (SNIPER is optional)
+                entry_checks = [e1, e2, e3, e4, e5, e6, e7]
                 entry_score = sum(entry_checks)
-                entry_pct = (entry_score / 5) * 100
+                entry_pct = (entry_score / 7) * 100
 
-                entry_ok = all(entry_checks)
+                entry_ok = entry_score >= 6  # 6/7 or better = valid
 
                 entry_color = "#27e08d" if entry_ok else "#ff4d4d"
                 entry_text = "ENTRY READY — High-Probability CALL Setup" if entry_ok else "ENTRY BLOCKED — Conditions Not Fully Met"
@@ -2537,7 +2867,7 @@ def power_roi_daytrading():
                             {entry_text}
                         </span>
                         <div style='margin-top:6px; font-size:13px; opacity:0.8;'>
-                            Checklist: <b>{entry_score}/5</b> ({entry_pct:.0f}%)
+                            Checklist: <b>{entry_score}/7</b> ({entry_pct:.0f}%)
                         </div>
                     </div>
                     </div>
@@ -2550,27 +2880,36 @@ def power_roi_daytrading():
                 st.markdown(
                     "<div class='check-card'>"
                     "<div class='check-header'>💰 CALL EXIT & PROFIT RULES</div>"
-                    "<div class='check-sub'>Use the same lines as dynamic profit targets.</div>",
+                    "<div class='check-sub'>Exit based on weakening momentum.</div>",
                     unsafe_allow_html=True,
                 )
 
-                x1 = st.checkbox("✔ TP1 hit: Price starts closing **back below BLUE EMA 9** (lock 20–30%)")
-                x2 = st.checkbox("✔ TP2 near: Price is approaching **RED EMA 21** (take 40–50%)")
-                x3 = st.checkbox("✔ TP3 near: Price has reached / tagged **YELLOW SMA 50** (unload remaining)")
-                x4 = st.checkbox(
-                    "✔ TP4: **PURPLE stock line goes parabolic** (vertical spike → exhaustion, sell everything)")
+                x1 = st.checkbox("✔ Price Closing BACK Below EMA 9 (BLUE)")
+                st.markdown("<div class='caption'>Loss of micro momentum — take partials.</div>",
+                            unsafe_allow_html=True)
 
-                # 🚀 ADDED VWAP EXIT CHECK
-                x5 = st.checkbox("✔ Price breaks BELOW VWAP (White dashed line) → intraday momentum reversing")
+                x2 = st.checkbox("✔ Price Approaching EMA 21 (RED)")
+                st.markdown("<div class='caption'>Trend cooling; consider selling remaining size.</div>",
+                            unsafe_allow_html=True)
+
+                x3 = st.checkbox("✔ HH Fails to Break / Double Top Forms")
+                st.markdown("<div class='caption'>Indicates exhaustion; manage risk.</div>", unsafe_allow_html=True)
+
+                x4 = st.checkbox("✔ Volume Drops on Green Candles")
+                st.markdown("<div class='caption'>Buyers weakening → prepare to exit.</div>", unsafe_allow_html=True)
+
+                x5 = st.checkbox("✔ Price Breaks Below VWAP")
+                st.markdown("<div class='caption'>Intraday sentiment flips bearish — exit immediately.</div>",
+                            unsafe_allow_html=True)
 
                 exit_checks = [x1, x2, x3, x4, x5]
                 exit_score = sum(exit_checks)
                 exit_pct = (exit_score / 5) * 100
 
-                exit_signal = any(exit_checks)
+                exit_signal = exit_score >= 2
 
                 exit_color = "#ffb84d" if exit_signal else "#27e08d"
-                exit_text = "EXIT / TAKE PROFIT SIGNAL ACTIVE" if exit_signal else "NO EXIT SIGNAL — Trend Still Healthy"
+                exit_text = "EXIT / TAKE PROFIT SIGNAL ACTIVE" if exit_signal else "NO EXIT SIGNAL — Trend Still Strong"
 
                 st.progress(exit_pct / 100)
 
@@ -2589,17 +2928,16 @@ def power_roi_daytrading():
                     unsafe_allow_html=True,
                 )
 
-            # ================== SUMMARY BANNER ==================
             st.markdown("---")
 
             if entry_ok and not exit_signal:
-                overall_msg = "✅ **Best Zone:** Fresh CALL entry or manage open calls with trend intact."
+                overall_msg = "✅ **Best Zone:** Fresh CALL entry available — trend aligned strong."
             elif entry_ok and exit_signal:
-                overall_msg = "⚠️ **Mixed:** Setup good but exits are triggering — reduce size."
+                overall_msg = "⚠️ **Mixed:** Good entry setup but exit triggers firing — reduce size."
             elif (not entry_ok) and exit_signal:
-                overall_msg = "⛔ **No New Calls:** Exit signals firing — avoid entries."
+                overall_msg = "⛔ **No New Calls:** Momentum reversing — avoid entries."
             else:
-                overall_msg = "🟡 **Wait:** No strong entry or exit signals — be patient."
+                overall_msg = "🟡 **Wait:** No strong entry or exit signals."
 
             st.markdown(
                 f"""
@@ -2611,6 +2949,7 @@ def power_roi_daytrading():
                 unsafe_allow_html=True,
             )
 
+        # ENTRY ENDS HERE
 # ============================================== NOTE TAKEN
             # ========================== NOTES & SAVE TO CSV ==========================
         # st.markdown("---")
@@ -2927,6 +3266,8 @@ def power_roi_daytrading():
     # ========================== EXPANDER: TRADING INSTRUCTIONS ==========================
     with st.expander("🧭 How to Load Option Chart & Take Position — Step-by-Step"):
         st.markdown("""
+        
+        
         ### ⚙️ **1️⃣ Load Your Option Chart in ThinkorSwim (TOS)**
         - Go to the **Trade Tab** → select your ticker (e.g., `AAPL`).
         - Find your desired **expiration date** (e.g., `7 NOV 25`).
@@ -2956,7 +3297,260 @@ def power_roi_daytrading():
 
     # ========================================================== ENDS HERE
 
-        # ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
+    # ==============================================================================================================
+    #  SYBEST SYSTEM INSTRUCTION
+    # =================================================================================================================
+    st.header('SYBEST SYSTEM TRADING UTILIZATION')
+
+    with st.expander('SYBEST SYSTEM TRADING UTILIZATION'):
+        st.markdown("## 📊 Trade Summary")
+        st.markdown("### 🟩 THE SYBEST CALL TRADING FRAMEWORK (Your System)")
+
+        st.markdown(
+            """
+    Your system already gives you these signals:
+
+    1️⃣ **Structure:** `HH + HL`  
+    2️⃣ **Trend:** `EMA 9 > EMA 21`  
+    3️⃣ **Location:** Above `VWAP`  
+    4️⃣ **Confirmation:** `1m + 5m` trend  
+    5️⃣ **Early Entry:** `HL` (pullback)  
+    6️⃣ **Sniper Entry:** Strong candle + `HL + HH`  
+    7️⃣ **Avoid Zones:** Supply, `PDH`
+
+    Now let’s combine all of these into a single powerful CALL strategy.
+            """
+        )
+
+        # 1. Location
+        st.markdown("### 🟩 1. Start With Location (MOST IMPORTANT)")
+        st.markdown(
+            """
+    Before you even think of entering, confirm:
+
+    - ✔ Is price **ABOVE VWAP**?  
+      - If **NO → cancel CALL idea**
+    - ✔ Is price **ABOVE EMA 9 & 21**?  
+      - If **NO → remove CALL idea**
+    - ✔ Is price **ABOVE ORH** (Opening Range High)?  
+      - If price breaks ORH → **CALL TREND DAY**  
+      - If below ORH → **wait for retest**.
+    - ✔ Is price **near PDH**?  
+      - PDH = **institutional resistance** → CALL can reject here.
+
+    **IDEAL CALL LOCATION = ABOVE VWAP + ABOVE ORH but NOT at PDH**
+            """
+        )
+
+        # 2. Trend
+        st.markdown("### 🟩 2. Confirm Trend (Multi-Timeframe)")
+        st.markdown(
+            """
+    Your labels show **1m, 5m, 30m** trends.
+
+    **For early entries you want:**
+
+    - 🟩 1m = CALL  
+    - 🟩 5m = CALL  
+    - ⚪ 30m = WAIT (optional)
+
+    **For safer entries you want:**
+
+    - 🟩 1m = CALL  
+    - 🟩 5m = CALL  
+    - 🟩 30m = CALL  
+
+    30m makes it slower, but more reliable.
+            """
+        )
+
+        # 3. Structure
+        st.markdown("### 🟩 3. Identify Structure (HH / HL)")
+        st.markdown(
+            """
+    Your system marks **HH** and **HL** automatically.
+
+    - ✔ **HH = Strength** (trend continuation)  
+    - ✔ **HL = Pullback** → **your CALL entry**  
+    - ❌ **LH / LL = STOP CALL trades**
+
+    Your call entry should come at **HL** — that’s your bread and butter.
+
+    **Visual idea:**
+
+    - HH prints at the top  
+    - Price pulls back but holds higher than last low (HL)  
+    - HL candle gives you the **CALL entry**
+            """
+        )
+
+        # 4. PDH/PDL
+        st.markdown("### 🟩 4. Use PDH / PDL Correctly")
+        st.markdown(
+            """
+    **PDH is the biggest trap for CALL traders.**
+
+    When price is near **PDH**:
+
+    - ❌ Do **NOT** buy CALLS *into* PDH
+    - ✔ You buy **AFTER** the breakout and retest:
+
+      - ✔ **PDH breakout → wait**  
+      - ✔ **PDH retest → CALL entry**
+
+    This is where many traders lose money. You will not.
+            """
+        )
+
+        # 5. CDH / CDL
+        st.markdown("### 🟩 5. Use CDH / CDL for Intraday Trend")
+        st.markdown(
+            """
+    - **CDH break** → CALL continuation  
+    - **CDH reject** → **avoid CALLs**  
+    - **CDL reject** → CALL bounce (reversal scalp)
+
+    Best risk/reward:
+
+    - 🔹 HL forms **above CDH** → CALL to new HOD  
+    - 🔹 HL forms **above VWAP** → CALL continuation
+            """
+        )
+
+        # 6. ORH
+        st.markdown("### 🟩 6. Use ORH as Your “Institutional Confirmation”")
+        st.markdown(
+            """
+    **ORH (Opening Range High)** is VERY powerful.
+
+    - ✔ Price **above ORH** → CALL bias  
+    - ✔ Price **below ORH** → WAIT  
+    - ✔ Price **retests ORH from above and bounces** → **CALL entry**
+
+    Institutions respect ORH almost as much as VWAP.
+            """
+        )
+
+        # 7. Sniper
+        st.markdown("### 🟩 7. Use Your SNIPER ENTRY")
+        st.markdown(
+            """
+    Your Sniper logic simplifies everything:
+
+    **Sniper CALL requires:**
+
+    - HL  
+    - HH  
+    - EMA9 > EMA21  
+    - Above VWAP  
+    - Strong bullish candle  
+    - Trend alignment
+
+    When **SNIPER prints**:
+
+    > 👉 This is the *cleanest* CALL entry you can take.  
+    > No FOMO. No guessing. No emotions.
+            """
+        )
+
+        # 8. When to avoid calls
+        st.markdown("### 🟩 8. When to AVOID CALLS (MOST IMPORTANT)")
+        st.markdown(
+            """
+    Avoid CALLs when:
+
+    - ❌ Price **below VWAP**
+    - ❌ **LH** structure forming
+    - ❌ **LL** forming
+    - ❌ Price at **supply zone**
+    - ❌ Weak volume
+    - ❌ Under ORH
+    - ❌ Approaching PDH
+    - ❌ EMA9 cross **down**
+    - ❌ Big rejection candle
+    - ❌ Sniper not triggered
+    - ❌ 5m TF not aligned
+
+    > Avoiding bad entries is EASIER and more powerful than forcing good ones.
+            """
+        )
+
+        # 9. Clear entry rules
+        st.markdown("### 🟩 9. CLEAR ENTRY RULES")
+        st.markdown(
+            """
+    For a **CALL entry**, check:
+
+    - ✔ Above **VWAP**
+    - ✔ Above **EMA 9 / 21**
+    - ✔ Forming **HL**
+    - ✔ Recent **HH** printed
+    - ✔ **1m + 5m** trends = CALL
+    - ✔ Not at **PDH** or **supply**
+    - ✔ HL forming near **CDH** or **ORH**
+    - ✔ Volume expanding
+    - ✔ **Sniper** or **CALL_OK** bubble prints
+
+    **If 5 or more are true → ENTRY**  
+    **If fewer than 5 → SKIP**
+            """
+        )
+
+        # 10. Exit rules
+        st.markdown("### 🟩 10. EXIT RULES (Very Important)")
+        st.markdown(
+            """
+    Exit when:
+
+    - ❌ Price **loses EMA 9**
+    - ❌ Price **loses VWAP**
+    - ❌ **LH** prints
+    - ❌ Big rejection candle at a key level
+    - ❌ Volume dies
+    - ❌ HOD liquidity grab candle appears
+    - ❌ Supply zone rejection
+    - ❌ 1m trend flips to **PUT**
+
+    > Taking profits **is a skill** – protect gains, don’t donate them back.
+            """
+        )
+
+        # Summary table
+        st.markdown("### 🟩 The Sybest CALL Trading Playbook (Summary)")
+        st.markdown(
+            """
+    **Your components and what they do:**
+
+    | Component         | Purpose                          |
+    |-------------------|----------------------------------|
+    | EMA 9/21          | Trend confirmation              |
+    | VWAP              | Institutional trend filter      |
+    | PDH/PDL           | Major reversal zones            |
+    | CDH/CDL           | Intraday trend zones            |
+    | ORH/ORL           | 5-min institutional entries     |
+    | HH/HL             | Trend structure                 |
+    | SNIPER            | Early & safest entries          |
+    | 1m/5m/30m Trend   | Multi-timeframe confirmation    |
+    | Supply / Demand   | Avoid bad entries & traps       |
+
+    Everything you built works together to give you:
+
+    - 🟩 Early entries  
+    - 🟩 High-probability setups  
+    - 🟩 Trend confirmation  
+    - 🟩 Structure confirmation  
+    - 🟩 Level-based entries  
+    - 🟩 Institutional alignment  
+    - 🟩 Trap avoidance  
+
+    This is how you become an **unstoppable CALL day trader** with the Sybest system.
+            """
+        )
+
+            # Example usage in your main app:
+            # show_sybest_call_framework()
+
+    # ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
         # DAILY CHECK LIST TO TRACK OPTION
         # ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]=
         # ========================================================================================================
@@ -2966,86 +3560,176 @@ def power_roi_daytrading():
     # ========================================================================================================
     # ⚙️ SYSTEM RULE ALIGNMENT — STRATEGY COMPLIANCE REVIEW (with 70% TP dropdown + auto logic)
     # ========================================================================================================
+    #
+    # st.markdown("---")
+    # st.subheader("⚙️ System Rule Alignment")
+    #
+    # # --- Section header ---
+    # st.markdown("#### 🧩 Review Each System Element 2")
+    # col1, col2, col3 = st.columns(3)
+    #
+    # # ========== COLUMN 1 ==========
+    # with col1:
+    #     trend_check = st.selectbox(
+    #         "📊 Trend Confirmation (5m/15m)",
+    #         ["✅ Followed", "❌ Not Followed"], index=1
+    #     )
+    #
+    #     volume_check = st.selectbox(
+    #         "📈 Volume > 500 & Spread ≤ $0.10",
+    #         ["✅ Followed", "❌ Not Followed"], index=0
+    #     )
+    #
+    # # ========== COLUMN 2 ==========
+    # with col2:
+    #     stop_check = st.selectbox(
+    #         "🛑 Stop-Loss (25%)",
+    #         ["✅ Followed", "❌ Not Followed"], index=1
+    #     )
+    #
+    #     # 🔍 Auto-evaluate Take-Profit based on trade data
+    #     if exit_premium > 0 and premium > 0:
+    #         tp_ratio = ((exit_premium - premium) / premium) * 100
+    #         if tp_ratio >= target_gain_pct:
+    #             tp_default = "⚡ Exceeded Target"
+    #         elif tp_ratio >= target_gain_pct * 0.9:
+    #             tp_default = "✅ Followed"
+    #         elif tp_ratio >= target_gain_pct * 0.6:
+    #             tp_default = "⚠️ Not Hit (Partial)"
+    #         else:
+    #             tp_default = "❌ Not Followed"
+    #     else:
+    #         tp_default = "⚠️ Not Hit (Partial)"
+    #
+    #     # ✅ Always render visible dropdown for user to confirm / override
+    #     target_check = st.selectbox(
+    #         "🎯 Take-Profit (70%)",
+    #         ["⚡ Exceeded Target", "✅ Followed", "⚠️ Not Hit (Partial)", "❌ Not Followed"],
+    #         index=["⚡ Exceeded Target", "✅ Followed", "⚠️ Not Hit (Partial)", "❌ Not Followed"].index(tp_default)
+    #     )
+    #
+    # # ========== COLUMN 3 ==========
+    # with col3:
+    #     risk_check = st.selectbox(
+    #         "💰 Risk ≤ 1% per Trade",
+    #         ["✅ Followed", "❌ Not Followed"], index=1
+    #     )
+    #
+    #     oco_check = st.selectbox(
+    #         "🔄 OCO Active",
+    #         ["✅ Followed", "❌ Not Followed"], index=1
+    #     )
+    #
+    # # --- Notes section ---
+    # system_note = st.text_area(
+    #     "🗒️ Add Comment or Observation (Optional)",
+    #     "Ignored stop-loss; exited manually after price reversal."
+    # )
+
+    # ==========================================================================PART 1
+
+    # ========================================================================================================
+    # ⚙️ SYSTEM RULE ALIGNMENT — SYBEST SNIPER CHECKLIST (Separated Timeframes)
+    # ========================================================================================================
 
     st.markdown("---")
-    st.subheader("⚙️ System Rule Alignment")
+    st.subheader("⚙️ Sybest Sniper — System Rule Alignment")
 
-    # --- Section header ---
-    st.markdown("#### 🧩 Review Each System Element 2")
+    st.markdown("#### 🧩 Review Each Entry Condition")
+
     col1, col2, col3 = st.columns(3)
 
-    # ========== COLUMN 1 ==========
+    # ========== COLUMN 1 ========== (Structure + Momentum)
     with col1:
-        trend_check = st.selectbox(
-            "📊 Trend Confirmation (5m/15m)",
-            ["✅ Followed", "❌ Not Followed"], index=1
+        call_zone = st.selectbox(
+            "🟩 CALL ZONE Active",
+            ["✅ Yes", "❌ No"], index=1
         )
 
-        volume_check = st.selectbox(
-            "📈 Volume > 500 & Spread ≤ $0.10",
-            ["✅ Followed", "❌ Not Followed"], index=0
+        hl_check = st.selectbox(
+            "📉 Higher Low (HL) Printed",
+            ["✅ Yes", "❌ No"], index=1
         )
 
-    # ========== COLUMN 2 ==========
+        hh_check = st.selectbox(
+            "📈 Higher High (HH) Printed",
+            ["✅ Yes", "❌ No"], index=1
+        )
+
+    # ========== COLUMN 2 ========== (Trend + Momentum)
     with col2:
-        stop_check = st.selectbox(
-            "🛑 Stop-Loss (25%)",
-            ["✅ Followed", "❌ Not Followed"], index=1
+        ema_check = st.selectbox(
+            "📊 EMA 9 > EMA 21",
+            ["✅ Yes", "❌ No"], index=1
         )
 
-        # 🔍 Auto-evaluate Take-Profit based on trade data
-        if exit_premium > 0 and premium > 0:
-            tp_ratio = ((exit_premium - premium) / premium) * 100
-            if tp_ratio >= target_gain_pct:
-                tp_default = "⚡ Exceeded Target"
-            elif tp_ratio >= target_gain_pct * 0.9:
-                tp_default = "✅ Followed"
-            elif tp_ratio >= target_gain_pct * 0.6:
-                tp_default = "⚠️ Not Hit (Partial)"
-            else:
-                tp_default = "❌ Not Followed"
-        else:
-            tp_default = "⚠️ Not Hit (Partial)"
-
-        # ✅ Always render visible dropdown for user to confirm / override
-        target_check = st.selectbox(
-            "🎯 Take-Profit (70%)",
-            ["⚡ Exceeded Target", "✅ Followed", "⚠️ Not Hit (Partial)", "❌ Not Followed"],
-            index=["⚡ Exceeded Target", "✅ Followed", "⚠️ Not Hit (Partial)", "❌ Not Followed"].index(tp_default)
+        price_ema_check = st.selectbox(
+            "💹 Price Above EMA 9",
+            ["✅ Yes", "❌ No"], index=1
         )
 
-    # ========== COLUMN 3 ==========
+        price_vwap_check = st.selectbox(
+            "🎯 Price Above VWAP",
+            ["✅ Yes", "❌ No"], index=1
+        )
+
+    # ========== COLUMN 3 ========== (Timeframes + Final Trigger)
     with col3:
-        risk_check = st.selectbox(
-            "💰 Risk ≤ 1% per Trade",
-            ["✅ Followed", "❌ Not Followed"], index=1
+        tf1 = st.selectbox(
+            "📍 1m Timeframe = CALL",
+            ["📗 CALL", "📕 PUT", "⚪ WAIT"], index=2
         )
 
-        oco_check = st.selectbox(
-            "🔄 OCO Active",
-            ["✅ Followed", "❌ Not Followed"], index=1
+        tf5 = st.selectbox(
+            "📍 5m Timeframe = CALL",
+            ["📗 CALL", "📕 PUT", "⚪ WAIT"], index=2
         )
 
-    # --- Notes section ---
+        tf30 = st.selectbox(
+            "📍 30m Timeframe (Optional)",
+            ["📗 CALL", "📕 PUT", "⚪ WAIT"], index=2
+        )
+
+        sniper_check = st.selectbox(
+            "🎯 SNIPER CALL Signal",
+            ["✅ Yes", "❌ No"], index=1
+        )
+
+    # ===================================================================
+    # NOTES + COMMENT
+    # ===================================================================
+
     system_note = st.text_area(
-        "🗒️ Add Comment or Observation (Optional)",
-        "Ignored stop-loss; exited manually after price reversal."
+        "🗒️ Add Comment (Optional)",
+        "HL and HH were valid; sniper candle did not print yet."
     )
 
     # ========================================================================================================
-    # 🎯 SCORING LOGIC
+    # 🎯 SCORING LOGIC (Updated for Sybest Sniper)
     # ========================================================================================================
 
     def score_rule(value):
-        if "✅" in value or "⚡" in value:
-            return 1  # full credit for Followed / Exceeded
-        elif "⚠️" in value:
-            return 0.5  # partial credit for Not Hit
+        if "✅" in value or "📗" in value:
+            return 1  # full credit
+        elif "⚪" in value:
+            return 0.5  # partial credit for WAIT
         else:
-            return 0  # no credit for Not Followed
+            return 0  # not followed
 
-    # Compute overall compliance
-    rule_values = [trend_check, volume_check, stop_check, target_check, risk_check, oco_check]
+    # New rule list matching our new checklist
+    rule_values = [
+        call_zone,
+        hl_check,
+        hh_check,
+        ema_check,
+        price_ema_check,
+        price_vwap_check,
+        tf1,
+        tf5,
+        tf30,
+        sniper_check
+    ]
+
     scores = [score_rule(v) for v in rule_values]
     score = sum(scores)
     total_rules = len(rule_values)
@@ -3066,6 +3750,7 @@ def power_roi_daytrading():
     # ========================================================================================================
     # 🪪 DISPLAY COMPLIANCE CARD
     # ========================================================================================================
+
     st.markdown(f"""
     <div style='margin-top:10px; border-radius:12px; padding:16px;
                 border:1px solid rgba(255,255,255,0.1);
@@ -3074,20 +3759,25 @@ def power_roi_daytrading():
             ⚙️ System Compliance Score: <b>{score:.1f} / {total_rules}</b> → {percent:.0f}% (Grade {grade})
         </h4>
         <ul style='color:#bdc3c7;'>
-            <li>📊 Trend Confirmation (5m/15m): {trend_check}</li>
-            <li>📈 Volume > 500, Spread ≤ $0.10: {volume_check}</li>
-            <li>🛑 Stop-Loss (25%): {stop_check}</li>
-            <li>🎯 Take-Profit (70%): {target_check}</li>
-            <li>💰 Risk ≤ 1% per Trade: {risk_check}</li>
-            <li>🔄 OCO Active: {oco_check}</li>
+            <li>🟩 CALL ZONE Active: {call_zone}</li>
+            <li>📉 Higher Low (HL): {hl_check}</li>
+            <li>📈 Higher High (HH): {hh_check}</li>
+            <li>📊 EMA Alignment: {ema_check}</li>
+            <li>💹 Above EMA9: {price_ema_check}</li>
+            <li>🎯 Above VWAP: {price_vwap_check}</li>
+            <li>📍 1m Trend: {tf1}</li>
+            <li>📍 5m Trend: {tf5}</li>
+            <li>📍 30m Trend (Optional): {tf30}</li>
+            <li>🎯 SNIPER CALL: {sniper_check}</li>
         </ul>
         <p><b>🗒️ Comment:</b> {system_note}</p>
     </div>
     """, unsafe_allow_html=True)
 
     # ========================================================================================================
-    # 💾 SAVE TO CHECKLIST TRACKER
+    # 💾 SAVE CHECKLIST ENTRY
     # ========================================================================================================
+
     if st.button("💾 Save System Alignment"):
         checklist_path = r"C:\Users\stans\ML_PROJECTS\0. STOCK_TRADING_PROJECT\1. Dataset\checklist-tracker.csv"
         trade_date_str = datetime.now().strftime("%Y-%m-%d")
@@ -3095,12 +3785,16 @@ def power_roi_daytrading():
         compliance_data = pd.DataFrame([{
             "Trade Date": trade_date_str,
             "Symbol": symbol,
-            "Trend Confirmation": trend_check,
-            "Volume/Spread": volume_check,
-            "Stop-Loss Followed": stop_check,
-            "Take-Profit Result": target_check,
-            "Risk Control": risk_check,
-            "OCO Active": oco_check,
+            "CALL ZONE": call_zone,
+            "HL Printed": hl_check,
+            "HH Printed": hh_check,
+            "EMA Alignment": ema_check,
+            "Above EMA9": price_ema_check,
+            "Above VWAP": price_vwap_check,
+            "1m Trend": tf1,
+            "5m Trend": tf5,
+            "30m Trend": tf30,
+            "Sniper Call": sniper_check,
             "System Compliance Score": f"{score:.1f}/{total_rules}",
             "System Compliance %": round(percent, 2),
             "System Grade": grade,
@@ -3117,7 +3811,7 @@ def power_roi_daytrading():
         updated.to_csv(checklist_path, index=False)
         st.success(f"✅ System Checklist saved — {percent:.0f}% compliance (Grade {grade})")
 
-# ========================================================================================================
+    # ========================================================================================================
                         # LOAD DATA SAVED FOR INSIGHT AND AVALYSIS
 # =========================================================================================================
 
@@ -3180,6 +3874,9 @@ def power_roi_daytrading():
         # ---------- SUMMARY METRICS ----------
         st.divider()
 
+            # ==============================================================================================
+        # ---------- SUMMARY METRICS ----------
+
         # total_trades = len(df)
         # profitable_trades = (df["Realized P/L $"] > 0).sum()
         # losing_trades = (df["Realized P/L $"] < 0).sum()
@@ -3192,19 +3889,22 @@ def power_roi_daytrading():
         # total_gain = df.loc[df["Realized P/L $"] > 0, "Realized P/L $"].sum()
         # total_loss = df.loc[df["Realized P/L $"] < 0, "Realized P/L $"].sum()
         #
-        # c1, c2, c3, c4, c5, c6 = st.columns(6)
+        # if "Trade Date" in df.columns:
+        #     unique_days = df["Trade Date"].nunique()
+        # elif "Date" in df.columns:
+        #     unique_days = df["Date"].nunique()
+        # else:
+        #     unique_days = "N/A"
+        #
+        # # =========================
+        # # 📊 CARD LAYOUT IN ONE LINE
+        # # =========================
+        # c1, c2, c3, c4, c5, c6, c7 = st.columns(7)
         # c1.metric("📊 Total Trades", total_trades)
         # c2.metric("💰 Total Capital Invested", f"${total_invested:,.2f}")
-        # c3.metric("🏁 Total Realized P/L", f"${total_profit:,.2f}")
-        # c4.metric("✅ Win Rate", f"{(profitable_trades / total_trades * 100):.1f}%" if total_trades > 0 else "N/A")
-        #
-        # c5.metric("📈 Total Gain", f"${total_gain:,.2f}")
-        # c6.metric("📉 Total Loss", f"${total_loss:,.2f}")
-        #
-        # st.markdown("---")
+        # c2.metric("💰 AVG Total Capital Invested", f"${total_invested:,.2f}")
 
-        # ==============================================================================================
-        # ---------- SUMMARY METRICS ----------
+        # ======================================================================== PART 2
 
         total_trades = len(df)
         profitable_trades = (df["Realized P/L $"] > 0).sum()
@@ -3214,174 +3914,282 @@ def power_roi_daytrading():
         total_profit = df["Realized P/L $"].sum()
         total_invested = df["Total Investment"].sum()
 
-        # ✅ Calculate total gain and total loss separately
+        # Separate gains/losses
         total_gain = df.loc[df["Realized P/L $"] > 0, "Realized P/L $"].sum()
         total_loss = df.loc[df["Realized P/L $"] < 0, "Realized P/L $"].sum()
 
+        # NEW → Average investment per trade
+        avg_investment = total_invested / total_trades if total_trades > 0 else 0
+
+        avg_contracts = df["Contracts"].mean()
+        avg_entry_premium = df["Entry Premium"].mean()
+
+        # Unique trading days
         if "Trade Date" in df.columns:
             unique_days = df["Trade Date"].nunique()
         elif "Date" in df.columns:
             unique_days = df["Date"].nunique()
         else:
             unique_days = "N/A"
+# ================================================================================== BEAUTIFUL
 
+        # BEAUTIFUL CARD CSS
+        st.markdown("""
+        <style>
+
+        .metric-card {
+            background: linear-gradient(145deg, #1f1f1f, #2c2c2c);
+            padding: 18px;
+            border-radius: 14px;
+            box-shadow: 5px 5px 12px #141414, -5px -5px 12px #2e2e2e;
+            text-align: center;
+            color: white;
+            border: 1px solid #333;
+            transition: 0.2s ease-in-out;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 5px 12px 22px #111;
+        }
+
+        .metric-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #e0e0e0;
+        }
+
+        .metric-value {
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .gain { color: #2ecc71 !important; }
+        .loss { color: #e74c3c !important; }
+        .warning { color: #f1c40f !important; }
+
+        </style>
+        """, unsafe_allow_html=True)
+
+        # =================================================== ENDS HERE
         # =========================
-        # 📊 CARD LAYOUT IN ONE LINE
+        # BEAUTIFUL BOX CARD LAYOUT
         # =========================
+
         c1, c2, c3, c4, c5, c6, c7 = st.columns(7)
-        c1.metric("📊 Total Trades", total_trades)
-        c2.metric("💰 Total Capital Invested", f"${total_invested:,.2f}")
-        c3.metric("🏁 Total Realized P/L", f"${total_profit:,.2f}")
-        c4.metric("✅ Win Rate", f"{(profitable_trades / total_trades * 100):.1f}%" if total_trades > 0 else "N/A")
 
-        # Use HTML for colored gain/loss cards inline
-        gain_color = "#2ecc71"  # green
-        loss_color = "#e74c3c"  # red
+        # Card 1 – Total Trades
+        c1.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">📊 Total Trades</div>
+            <div class="metric-value">{total_trades}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        c5.markdown(
-            f"""
-            <div style="text-align:center;">
-                <h4 style="margin-bottom:2px;">📈 Total Gain</h4>
-                <h3 style="color:{gain_color}; margin-top:0;">${total_gain:,.2f}</h3>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        # Card 2 – Total Capital Invested
+        c2.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">💰 Total Capital Invested</div>
+            <div class="metric-value">${total_invested:,.2f}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        # c6.markdown(
-        #     f"""
-        #     <div style="text-align:center;">
-        #         <h4 style="margin-bottom:2px;">📉 Total Loss</h4>
-        #         <h3 style="color:{loss_color}; margin-top:0;">${total_loss:,.2f}</h3>
-        #     </div>
-        #     """,
-        #     unsafe_allow_html=True
-        # )
+        # Card 2 (second metric) – Avg Total Investment
+        avg_total_investment = df["Total Investment"].mean()
+        c2.markdown(f"""
+        <div class="metric-card" style="margin-top:10px;">
+            <div class="metric-title">📉 Avg Total Investment</div>
+            <div class="metric-value">${avg_total_investment:,.2f}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        c6.markdown(
-            f"""
-            <div style="text-align:center;">
-                <h4 style="margin-bottom:2px;">📉 Total Loss</h4>
-                <h3 style="color:{loss_color}; margin-top:0;">${total_loss:,.2f}</h3>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        # Card 3 – Total P/L
+        c3.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">🏁 Total Realized P/L</div>
+            <div class="metric-value">{'$' + format(total_profit, ',.2f')}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        c7.markdown(
-            f"""
-            <div style="text-align:center;">
-                <h4 style="margin-bottom:2px;">🗓️ No. Days Traded</h4>
-                <h3 style="color:#f1c40f; margin-top:0;">{unique_days}</h3>
-            </div>
-            """,
-            unsafe_allow_html=True
-        )
+        # Card 3 (second metric) – Avg Contracts
+        c3.markdown(f"""
+        <div class="metric-card" style="margin-top:10px;">
+            <div class="metric-title">🧮 Avg Contracts per Trade</div>
+            <div class="metric-value">{avg_contracts:.2f}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-        # st.markdown("---")
+        # Card 4 – Win Rate
+        c4.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">✅ Win Rate</div>
+            <div class="metric-value">{(profitable_trades / total_trades * 100):.1f}%</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Card 4 (second metric) – Avg Entry Premium
+        c4.markdown(f"""
+        <div class="metric-card" style="margin-top:10px;">
+            <div class="metric-title">💵 Avg Entry Premium</div>
+            <div class="metric-value">${avg_entry_premium:.2f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Card 5 – Total Gain
+        c5.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">📈 Total Gain</div>
+            <div class="metric-value gain">${total_gain:,.2f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Card 6 – Total Loss
+        c6.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">📉 Total Loss</div>
+            <div class="metric-value loss">${total_loss:,.2f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # Card 7 – Days Traded
+        c7.markdown(f"""
+        <div class="metric-card">
+            <div class="metric-title">🗓️ Days Traded</div>
+            <div class="metric-value warning">{unique_days}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
         st.markdown("---")
+
+        # # ========================================= ADDED
+        # # =========================
+        # # EXTRA METRIC CARDS (NEW)
+        # # =========================
+        #
+        # # Calculate averages
+        # avg_contracts = df["Contracts"].mean()
+        # avg_entry_premium = df["Entry Premium"].mean()
+        #
+        # c8, c9 = st.columns(2)
+        #
+        # # Card: Avg Contracts per Trade
+        # c8.markdown(f"""
+        # <div class="metric-card">
+        #     <div class="metric-title">🧮 Avg Contracts per Trade</div>
+        #     <div class="metric-value">{avg_contracts:.2f}</div>
+        # </div>
+        # """, unsafe_allow_html=True)
+        #
+        # # Card: Avg Entry Premium
+        # c9.markdown(f"""
+        # <div class="metric-card">
+        #     <div class="metric-title">💵 Avg Entry Premium</div>
+        #     <div class="metric-value">${avg_entry_premium:.2f}</div>
+        # </div>
+        # """, unsafe_allow_html=True)
 
         # ==============================================================================================================
         # ---------- ROI TREND ----------
-        # st.subheader("📉 ROI Progression — Projected vs Actual (%)")
-        # fig, ax = plt.subplots(figsize=(8, 4))
-        # ax.plot(df["Timestamp"], df["Projected ROI %"], label="Projected ROI", marker="o", color="#e74c3c")
-        # ax.plot(df["Timestamp"], df["Actual ROI %"], label="Actual ROI", marker="s", color="#2ecc71")
-        # for i, v in enumerate(df["Projected ROI %"]):
-        #     ax.text(df["Timestamp"].iloc[i], v + 1, f"{v:.1f}%", color="#e74c3c", ha="center", fontsize=8)
-        # for i, v in enumerate(df["Actual ROI %"]):
-        #     ax.text(df["Timestamp"].iloc[i], v - 2, f"{v:.1f}%", color="#2ecc71", ha="center", fontsize=8)
-        # ax.set_xlabel("Trade Date")
-        # ax.set_ylabel("ROI (%)")
-        # ax.legend()
-        # ax.grid(alpha=0.3)
-        # st.pyplot(fig)
 
-       
-        # ---------- ROI TREND (Labels Slightly Above Line) ----------
-        # ---------- ROI TREND (Labels Slightly Above Line with Thinner Lines) ----------
         st.subheader("📉 ROI Progression — Projected vs Actual (%)")
 
-        fig, ax = plt.subplots(figsize=(8, 4), dpi=150)
+        with st.expander("📉 ROI Progression — Projected vs Actual (%)"):
 
-        # Lines — thinner & smaller markers for a clean visual
-        ax.plot(df["Timestamp"], df["Projected ROI %"],
-                label="Projected ROI", marker="o", color="#e74c3c",
-                linewidth=1.8, markersize=6)
+            fig, ax = plt.subplots(figsize=(8, 4), dpi=150)
 
-        ax.plot(df["Timestamp"], df["Actual ROI %"],
-                label="Actual ROI", marker="s", color="#2ecc71",
-                linewidth=1.8, markersize=5)
+            # Lines — thinner & smaller markers for a clean visual
+            ax.plot(df["Timestamp"], df["Projected ROI %"],
+                    label="Projected ROI", marker="o", color="#e74c3c",
+                    linewidth=1.8, markersize=6)
 
-        # Smooth label placement slightly above line
-        offset_proj = (df["Projected ROI %"].max() - df["Projected ROI %"].min()) * 0.02  # 2% vertical offset
-        offset_act = (df["Actual ROI %"].max() - df["Actual ROI %"].min()) * 0.02 if df["Actual ROI %"].max() != df[
-            "Actual ROI %"].min() else 1
+            ax.plot(df["Timestamp"], df["Actual ROI %"],
+                    label="Actual ROI", marker="s", color="#2ecc71",
+                    linewidth=1.8, markersize=5)
 
-        for i, v in enumerate(df["Projected ROI %"]):
-            ax.text(df["Timestamp"].iloc[i], v + offset_proj, f"{v:.1f}%",
-                    color="#e74c3c", ha="center", va="bottom", fontsize=8.5,
-                    fontweight="bold")
+            # Smooth label placement slightly above line
+            offset_proj = (df["Projected ROI %"].max() - df["Projected ROI %"].min()) * 0.02
+            offset_act = (df["Actual ROI %"].max() - df["Actual ROI %"].min()) * 0.02 \
+                if df["Actual ROI %"].max() != df["Actual ROI %"].min() else 1
 
-        for i, v in enumerate(df["Actual ROI %"]):
-            ax.text(df["Timestamp"].iloc[i], v + offset_act, f"{v:.1f}%",
-                    color="#2ecc71", ha="center", va="bottom", fontsize=8.5,
-                    fontweight="bold")
+            for i, v in enumerate(df["Projected ROI %"]):
+                ax.text(df["Timestamp"].iloc[i], v + offset_proj, f"{v:.1f}%",
+                        color="#e74c3c", ha="center", va="bottom", fontsize=8.5,
+                        fontweight="bold")
 
-        # Axis labels and layout
-        ax.set_xlabel("Trade Date", fontsize=10)
-        ax.set_ylabel("ROI (%)", fontsize=10)
-        ax.set_title("📊 ROI Progression — Projected vs Actual (%)", fontsize=12, pad=8)
-        ax.legend(facecolor="white", framealpha=1, loc="upper left", fontsize=9)
-        ax.grid(alpha=0.3)
-        ax.spines["top"].set_visible(False)
-        ax.spines["right"].set_visible(False)
+            for i, v in enumerate(df["Actual ROI %"]):
+                ax.text(df["Timestamp"].iloc[i], v + offset_act, f"{v:.1f}%",
+                        color="#2ecc71", ha="center", va="bottom", fontsize=8.5,
+                        fontweight="bold")
 
-        # Adjust padding for balance
-        plt.tight_layout(pad=1.5)
-        st.pyplot(fig)
+            # Axis labels and layout
+            ax.set_xlabel("Trade Date", fontsize=10)
+            ax.set_ylabel("ROI (%)", fontsize=10)
+            ax.set_title("📊 ROI Progression — Projected vs Actual (%)", fontsize=12, pad=8)
 
+            # Rotate X-axis labels for readability
+            plt.setp(ax.get_xticklabels(), rotation=90, ha='center')
+
+            ax.legend(facecolor="white", framealpha=1, loc="lower center", fontsize=9)
+            ax.grid(alpha=0.3)
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
+
+            plt.tight_layout(pad=2.0)
+            st.pyplot(fig)
+
+        # ===================
         # ===================ENDS HERE===============
         # ---------- ENTRY VS EXIT PREMIUM ----------
-        st.subheader("💵 Entry vs Exit Premium per Contract")
-        fig_price, ax_price = plt.subplots(figsize=(8, 4))
-        ax_price.plot(df["Timestamp"], df["Entry Premium"], label="Entry Premium (Buy)", marker="o", color="#e74c3c")
-        ax_price.plot(df["Timestamp"], df["Exit Premium"], label="Exit Premium (Sell)", marker="s", color="#2ecc71")
-        for i, v in enumerate(df["Entry Premium"]):
-            ax_price.text(df["Timestamp"].iloc[i], v + 0.05, f"${v:.2f}", color="#e74c3c", ha="center", fontsize=8)
-        for i, v in enumerate(df["Exit Premium"]):
-            ax_price.text(df["Timestamp"].iloc[i], v + 0.05, f"${v:.2f}", color="#2ecc71", ha="center", fontsize=8)
-        ax_price.set_xlabel("Trade Date")
-        ax_price.set_ylabel("Premium ($)")
-        ax_price.legend()
-        ax_price.grid(alpha=0.3)
-        st.pyplot(fig_price)
+
+
+            # ---------- ENTRY VS EXIT PREMIUM ----------
+            st.subheader("💵 Entry vs Exit Premium per Contract")
+
+            fig_price, ax_price = plt.subplots(figsize=(8, 4), dpi=150)
+
+            # Lines
+            ax_price.plot(df["Timestamp"], df["Entry Premium"],
+                          label="Entry Premium (Buy)",
+                          marker="o", color="#e74c3c",
+                          linewidth=1.8, markersize=6)
+
+            ax_price.plot(df["Timestamp"], df["Exit Premium"],
+                          label="Exit Premium (Sell)",
+                          marker="s", color="#2ecc71",
+                          linewidth=1.8, markersize=6)
+
+            # Annotate values slightly above markers
+            for i, v in enumerate(df["Entry Premium"]):
+                ax_price.text(df["Timestamp"].iloc[i], v + 0.05, f"${v:.2f}",
+                              color="#e74c3c", ha="center", va="bottom",
+                              fontsize=8, fontweight="bold")
+
+            for i, v in enumerate(df["Exit Premium"]):
+                ax_price.text(df["Timestamp"].iloc[i], v + 0.05, f"${v:.2f}",
+                              color="#2ecc71", ha="center", va="bottom",
+                              fontsize=8, fontweight="bold")
+
+            # Labels + Title
+            ax_price.set_xlabel("Trade Date", fontsize=10)
+            ax_price.set_ylabel("Premium ($)", fontsize=10)
+            ax_price.set_title("💵 Entry vs Exit Premium per Contract", fontsize=12, pad=8)
+
+            # Rotate X-axis labels 90 degrees
+            plt.setp(ax_price.get_xticklabels(), rotation=78, ha='center')
+
+            # Legend + Grid
+            ax_price.legend(facecolor="white", framealpha=1, fontsize=9, loc="upper left")
+            ax_price.grid(alpha=0.3)
+
+            # Polished figure layout
+            plt.tight_layout(pad=2.0)
+
+            st.pyplot(fig_price)
+
+        # ====================== END HERE
 
         # # ---------- R:R COMPARISON ----------
-        # st.subheader("⚖️ Projected vs Actual Risk/Reward Ratio")
-        # fig2, ax2 = plt.subplots(figsize=(8, 4))
-        # bar_width = 0.4
-        # x = range(len(df))
-        # bars_proj = ax2.bar([i - bar_width / 2 for i in x], df["Projected R:R"], width=bar_width,
-        #                     label="Projected", color="#e74c3c")
-        # bars_act = ax2.bar([i + bar_width / 2 for i in x], df["Actual R:R"], width=bar_width,
-        #                    label="Actual", color="#2ecc71", alpha=0.8)
-        # ax2.set_xticks(x)
-        # ax2.set_xticklabels(df["Symbol"].fillna("Unknown").astype(str), rotation=45, ha="right")
-        # ax2.set_ylabel("R:R Ratio")
-        # ax2.legend()
-        # ax2.grid(alpha=0.3)
-        #
-        # # Annotate both bars
-        # for bars in [bars_proj, bars_act]:
-        #     for bar in bars:
-        #         height = bar.get_height()
-        #         ax2.text(bar.get_x() + bar.get_width() / 2, height + 0.05,
-        #                  f"{height:.2f}", ha="center", va="bottom", fontsize=8, color="#2c3e50")
-        #
-        # st.pyplot(fig2)
-
-        # ======================================================================================= PART 2
 
         # ---------- R:R COMPARISON ----------
         st.subheader("⚖️ Projected vs Actual Risk/Reward Ratio")
@@ -3431,26 +4239,6 @@ def power_roi_daytrading():
 
         # ========================= ENDS HERE=================
         # ---------- PROFIT / LOSS ----------
-        # st.subheader("📊 Profit / Loss per Trade ($)")
-        # df["Symbol"] = df["Symbol"].fillna("Unknown").astype(str)
-        # fig4, ax4 = plt.subplots(figsize=(8, 4))
-        # colors = df["Realized P/L $"].apply(lambda x: "#2ecc71" if x > 0 else "#e74c3c")
-        # bars = ax4.bar(df["Symbol"], df["Realized P/L $"], color=colors)
-        # ax4.axhline(0, color="gray", linestyle="--", linewidth=1)
-        # for bar in bars:
-        #     height = bar.get_height()
-        #     y_offset = 0.02 * max(df["Realized P/L $"]) if height > 0 else -0.05 * abs(min(df["Realized P/L $"]))
-        #     ax4.text(bar.get_x() + bar.get_width() / 2, height + y_offset,
-        #              f"${height:,.0f}", ha="center",
-        #              va="bottom" if height > 0 else "top",
-        #              fontsize=9, color="#2c3e50", fontweight="bold")
-        # ax4.set_xlabel("Symbol")
-        # ax4.set_ylabel("Profit / Loss ($)")
-        # ax4.set_title("Per-Trade Profit vs Loss (Annotated)")
-        # ax4.grid(alpha=0.2)
-        # st.pyplot(fig4)
-
-        # ===================================================================================== SECOND GOOD GRAPHS
 
         # ========================= ENDS HERE=================
         # ---------- PROFIT / LOSS ----------
@@ -3599,141 +4387,6 @@ def power_roi_daytrading():
     # ========================================================================================================
     # 🎓 TRADER PERFORMANCE GRADE — Daily and Overall
     # ========================================================================================================
-#      # ========================================================================================================
-#     # 🎓 TRADER PERFORMANCE GRADE — Daily and Overall                           TRADING GRADE
-#     # ========================================================================================================
-#
-#     # import os
-#     # from datetime import datetime
-#     # import pandas as pd
-#     # import streamlit as st
-#
-#     # Add missing variable defaults to prevent NameError
-#     exit_premium = 0
-#     premium = 0
-#     target_gain_pct = 70
-#     symbol = "AAPL"
-#
-#     st.markdown("---")
-#     st.subheader("🎓 Trader Performance Grade — Daily & Overall")
-#
-#     # ========================================================================================================
-#     # 🔄 AUTO-LOAD LATEST TRADE DATA & ENSURE TODAY'S TRADES ARE INCLUDED
-#     # ========================================================================================================
-#
-#     save_path = r"C:\Users\stans\ML_PROJECTS\0. STOCK_TRADING_PROJECT\1. Dataset\Option_trading.csv"
-#
-#     if os.path.exists(save_path):
-#         df = pd.read_csv(save_path)
-#     else:
-#         st.warning("⚠️ No trade data file found.")
-#         st.stop()
-#
-#     df["Timestamp"] = pd.to_datetime(df["Timestamp"], errors="coerce")
-#     df["Date"] = df["Timestamp"].dt.date
-#
-#     today = datetime.now().date()
-#     today_trades = df[df["Date"] == today]
-#
-#     if today_trades.empty:
-#         st.warning("⚠️ No trades recorded today yet.")
-#     else:
-#         st.success(f"📅 Showing today's performance ({today}) — {len(today_trades)} trade(s) found.")
-#
-#     # Ensure Timestamp is parsed correctly
-#     df["Date"] = pd.to_datetime(df["Timestamp"], errors="coerce").dt.date
-#
-#     # Function to calculate grade
-#     def compute_grade(data):
-#         total_trades = len(data)
-#         profitable_trades = (data["Realized P/L $"] > 0).sum()
-#         win_rate = (profitable_trades / total_trades * 100) if total_trades > 0 else 0
-#         avg_proj_roi = data["Projected ROI %"].mean()
-#         avg_actual_roi = data["Actual ROI %"].mean()
-#         avg_rr_diff = (data["Projected R:R"] - data["Actual R:R"]).mean()
-#         roi_efficiency = max(0, 100 - abs(avg_proj_roi - avg_actual_roi))
-#         rr_efficiency = max(0, (data["Actual R:R"].mean() / data["Projected R:R"].mean()) * 100) if data[
-#                                                                                                         "Projected R:R"].mean() > 0 else 0
-#         total_profit = data["Realized P/L $"].sum()
-#         profit_factor = 100 if total_profit > 0 else 40
-#
-#         score = (win_rate * 0.4) + (roi_efficiency * 0.3) + (rr_efficiency * 0.2) + (profit_factor * 0.1)
-#         score = min(100, round(score, 2))
-#
-#         if score >= 90:
-#             grade, color, note = "A+", "#27ae60", "Outstanding — Consistent control and profitability!"
-#         elif score >= 80:
-#             grade, color, note = "A", "#2ecc71", "Excellent discipline and strong returns."
-#         elif score >= 70:
-#             grade, color, note = "B", "#f1c40f", "Good performance — improve entry precision."
-#         elif score >= 60:
-#             grade, color, note = "C", "#e67e22", "Average — risk management needs attention."
-#         else:
-#             grade, color, note = "D", "#e74c3c", "Needs improvement — review strategy consistency."
-#
-#         return grade, color, note, score, win_rate, roi_efficiency, rr_efficiency, profit_factor, total_profit
-#
-#     # ========== TODAY'S PERFORMANCE (NEW SECTION) ==========
-#     if not today_trades.empty:
-#         grade, color, note, score, win_rate, roi_eff, rr_eff, profit_factor, total_profit = compute_grade(today_trades)
-#         st.markdown(f"""
-#         <div style='margin-bottom:12px; border-radius:10px; padding:12px; border:1px solid rgba(255,255,255,0.15);
-#                     background:rgba(255,255,255,0.05);'>
-#             <h4 style='color:{color};'>🌞 Today's Grade ({today}) — <b>{grade}</b> ({score}%)</h4>
-#             <p style='color:#bdc3c7; margin-bottom:4px;'>{note}</p>
-#             <ul style='margin:0; padding-left:20px; color:#bdc3c7;'>
-#                 <li>📈 Win Rate: {win_rate:.1f}%</li>
-#                 <li>🎯 ROI Efficiency: {roi_eff:.1f}%</li>
-#                 <li>⚖️ R:R Efficiency: {rr_eff:.1f}%</li>
-#                 <li>💰 Profit Factor: {profit_factor}%</li>
-#                 <li>💵 Daily P/L: ${total_profit:,.2f}</li>
-#             </ul>
-#         </div>
-#         """, unsafe_allow_html=True)
-#
-#     # ========== DAILY PERFORMANCE ==========
-#     st.markdown("### 📅 Daily Trade Grades")
-#     daily_groups = df.groupby("Date")
-#
-#     for date, group in daily_groups:
-#         grade, color, note, score, win_rate, roi_eff, rr_eff, profit_factor, total_profit = compute_grade(group)
-#         st.markdown(f"""
-#         <div style='margin-bottom:12px; border-radius:10px; padding:12px; border:1px solid rgba(255,255,255,0.15);
-#                     background:rgba(255,255,255,0.03);'>
-#             <h4 style='color:{color};'>📆 {date} — Grade: <b>{grade}</b> ({score}%)</h4>
-#             <p style='color:#bdc3c7; margin-bottom:4px;'>{note}</p>
-#             <ul style='margin:0; padding-left:20px; color:#bdc3c7;'>
-#                 <li>📈 Win Rate: {win_rate:.1f}%</li>
-#                 <li>🎯 ROI Efficiency: {roi_eff:.1f}%</li>
-#                 <li>⚖️ R:R Efficiency: {rr_eff:.1f}%</li>
-#                 <li>💰 Profit Factor: {profit_factor}%</li>
-#                 <li>💵 Daily P/L: ${total_profit:,.2f}</li>
-#             </ul>
-#         </div>
-#         """, unsafe_allow_html=True)
-#
-#     # ========== OVERALL PERFORMANCE ==========
-#     st.markdown("### 🏁 Overall Trader Grade Summary")
-#
-#     grade, color, note, score, win_rate, roi_eff, rr_eff, profit_factor, total_profit = compute_grade(df)
-#
-#     st.markdown(f"""
-#     <div style='border-radius:12px; padding:20px; border:1px solid rgba(255,255,255,0.15);
-#                 background:rgba(255,255,255,0.02);'>
-#         <h3 style='color:{color};'>🏆 Overall Grade: <b>{grade}</b> ({score}%)</h3>
-#         <p style='color:#bdc3c7;'>{note}</p>
-#         <ul>
-#             <li>📈 Win Rate: {win_rate:.1f}%</li>
-#             <li>🎯 ROI Consistency: {roi_eff:.1f}%</li>
-#             <li>⚖️ R:R Efficiency: {rr_eff:.1f}%</li>
-#             <li>💰 Profit Factor: {profit_factor}%</li>
-#             <li>💵 Net P/L: ${total_profit:,.2f}</li>
-#         </ul>
-#     </div>
-#     """, unsafe_allow_html=True)
-
-# ================================================================================================== PART 22
-
     # ========================================================================================================
     # 🎓 TRADER PERFORMANCE GRADE — Daily and Overall (Individual Trade Grading Added)
     # ========================================================================================================
@@ -6311,3 +6964,1078 @@ elif menu == "🎯 Best Strike Picker":
 #
 # elif menu == "📊 Trade Activity Analysis":
 #     trade_activity_analysis()
+
+
+# # =============================================================================
+# # TOS AUTOMATION CODES HERE
+# # ===============================================================================
+#
+#
+# input fastLength = 9;
+# input slowLength = 21;
+# input rsiLength = 14;
+# input alertEnabled = yes;
+#
+# # -----------------------------
+# # 1️⃣ CORE CALCULATIONS (1-MIN)
+# # -----------------------------
+# def price = close;
+# def emaFast = ExpAverage(price, fastLength);
+# def emaSlow = ExpAverage(price, slowLength);
+# def rsi = RSI(length = rsiLength);
+# def vwapLine = VWAP();
+#
+# def bull1 = emaFast > emaSlow;
+# def bear1 = emaFast < emaSlow;
+#
+# # -----------------------------
+# # 2️⃣ MULTI-TIMEFRAME (5m + 30m)
+# # -----------------------------
+# def c5  = close(period = AggregationPeriod.FIVE_MIN);
+# def c30 = close(period = AggregationPeriod.THIRTY_MIN);
+#
+# def emaFast5 = ExpAverage(c5, fastLength);
+# def emaSlow5 = ExpAverage(c5, slowLength);
+# def bull5 = emaFast5 > emaSlow5;
+# def bear5 = emaFast5 < emaSlow5;
+#
+# def emaFast30 = ExpAverage(c30, fastLength);
+# def emaSlow30 = ExpAverage(c30, slowLength);
+# def bull30 = emaFast30 > emaSlow30;
+# def bear30 = emaFast30 < emaSlow30;
+#
+# # -----------------------------
+# # 3️⃣ STRICT CALL / PUT LOGIC
+# # -----------------------------
+# def CALL_OK =
+#     bull1 and bull5 and bull30 and
+#     price > vwapLine and
+#     rsi > 55;
+#
+# def PUT_OK =
+#     bear1 and bear5 and bear30 and
+#     price < vwapLine and
+#     rsi < 45;
+#
+# # -----------------------------
+# # 4️⃣ PLOT EMAs
+# # -----------------------------
+# plot EMA_9 = emaFast;
+# EMA_9.SetDefaultColor(Color.BLUE);
+# EMA_9.SetLineWeight(2);
+#
+# plot EMA_21 = emaSlow;
+# EMA_21.SetDefaultColor(Color.RED);
+# EMA_21.SetLineWeight(2);
+#
+# # -----------------------------
+# # 5️⃣ CALL & PUT Bubbles (High Visibility)
+# # -----------------------------
+# AddChartBubble(
+#     CALL_OK,
+#     emaFast + (TickSize() * 4),
+#     "CALL",
+#     Color.GREEN,
+#     yes
+# );
+#
+# AddChartBubble(
+#     PUT_OK,
+#     emaFast - (TickSize() * 4),
+#     "PUT",
+#     Color.RED,
+#     no
+# );
+#
+# # -----------------------------
+# # 6️⃣ ALERTS
+# # -----------------------------
+# Alert(
+#     CALL_OK and alertEnabled,
+#     "CALL CONFIRMED — All Timeframes Bullish",
+#     Alert.BAR,
+#     Sound.Ding
+# );
+#
+# Alert(
+#     PUT_OK and alertEnabled,
+#     "PUT CONFIRMED — All Timeframes Bearish",
+#     Alert.BAR,
+#     Sound.Ding
+# );
+#
+# # -----------------------------
+# # 7️⃣ HIGH VISIBILITY DASHBOARD
+# # -----------------------------
+# AddLabel(
+#     yes,
+#     "30m TF: " + (if bull30 then "CALL" else if bear30 then "PUT" else "WAIT"),
+#     if bull30 then CreateColor(0, 255, 0)
+#     else if bear30 then CreateColor(255, 0, 0)
+#     else Color.YELLOW
+# );
+#
+# AddLabel(
+#     yes,
+#     "5m TF: " + (if bull5 then "CALL" else if bear5 then "PUT" else "WAIT"),
+#     if bull5 then CreateColor(0, 255, 0)
+#     else if bear5 then CreateColor(255, 0, 0)
+#     else Color.YELLOW
+# );
+#
+# AddLabel(
+#     yes,
+#     "1m TF: " + (if bull1 then "CALL" else if bear1 then "PUT" else "WAIT"),
+#     if bull1 then CreateColor(0, 255, 0)
+#     else if bear1 then CreateColor(255, 0, 0)
+#     else Color.YELLOW
+# );
+#
+# AddLabel(
+#     yes,
+#     if CALL_OK then "🟩 CALL ENTRY READY"
+#     else if PUT_OK then "🟥 PUT ENTRY READY"
+#     else "⚠ NO TRADE",
+#     if CALL_OK then CreateColor(0, 200, 0)
+#     else if PUT_OK then CreateColor(200, 0, 0)
+#     else Color.YELLOW
+# );
+#
+# # -----------------------------
+# # 8️⃣ RSI + VWAP LABELS
+# # -----------------------------
+# AddLabel(
+#     yes,
+#     "RSI: " + Round(rsi, 0),
+#     if rsi > 55 then CreateColor(0, 255, 0)
+#     else if rsi < 45 then CreateColor(255, 0, 0)
+#     else Color.WHITE
+# );
+#
+# AddLabel(
+#     yes,
+#     "VWAP: " + Round(vwapLine, 2),
+#     CreateColor(120, 120, 120)
+# );
+#
+# # =====================================================================
+# # 💡 "Trade the alignment — Not the noise." — Sybest LLC
+# # =====================================================================
+
+
+# =================================================================================== PART 22
+
+#
+# input fastLength = 9;
+# input slowLength = 21;
+# input rsiLength = 14;
+# input alertEnabled = yes;
+#
+# # -----------------------------
+# # 1️⃣ CORE CALCULATIONS (1-MIN)
+# # -----------------------------
+# def price = close;
+# def emaFast = ExpAverage(price, fastLength);
+# def emaSlow = ExpAverage(price, slowLength);
+# def rsi = RSI(length = rsiLength);
+# def vwapLine = VWAP();
+#
+# def bull1 = emaFast > emaSlow;
+# def bear1 = emaFast < emaSlow;
+#
+# # -----------------------------
+# # 2️⃣ MULTI-TIMEFRAME (5m + 30m)
+# # -----------------------------
+# def c5  = close(period = AggregationPeriod.FIVE_MIN);
+# def c30 = close(period = AggregationPeriod.THIRTY_MIN);
+#
+# def emaFast5 = ExpAverage(c5, fastLength);
+# def emaSlow5 = ExpAverage(c5, slowLength);
+# def bull5 = emaFast5 > emaSlow5;
+# def bear5 = emaFast5 < emaSlow5;
+#
+# def emaFast30 = ExpAverage(c30, fastLength);
+# def emaSlow30 = ExpAverage(c30, slowLength);
+# def bull30 = emaFast30 > emaSlow30;
+# def bear30 = emaFast30 < emaSlow30;
+#
+# # -----------------------------
+# # 3️⃣ STRICT CALL / PUT LOGIC
+# # -----------------------------
+# def CALL_OK =
+#     bull1 and bull5 and bull30 and
+#     price > vwapLine and
+#     rsi > 55;
+#
+# def PUT_OK =
+#     bear1 and bear5 and bear30 and
+#     price < vwapLine and
+#     rsi < 45;
+#
+# # -----------------------------
+# # ⭐ 4️⃣ TREND STRUCTURE (HH / HL / LH / LL)
+# # -----------------------------
+# def HH = high > high[1] and high[1] > high[2];     # Higher High
+# def HL = low > low[1] and low[1] < low[2];          # Higher Low
+#
+# def LH = high < high[1] and high[1] < high[2];      # Lower High
+# def LL = low < low[1] and low[1] > low[2];          # Lower Low
+#
+# def UPTREND = HH or HL;
+# def DOWNTREND = LH or LL;
+#
+# # -----------------------------
+# # ⭐ HH & LL BUBBLES
+# # -----------------------------
+# AddChartBubble(HH, high, "HH", Color.CYAN, yes);
+# AddChartBubble(LL, low, "LL", Color.RED, no);
+#
+# # -----------------------------
+# # ⭐ HL SUPPORT LINE (Light Gray)
+# # -----------------------------
+# plot HL_SUPPORT = if HL then low else Double.NaN;
+# HL_SUPPORT.SetLineWeight(3);
+# HL_SUPPORT.SetDefaultColor(CreateColor(180,180,180));
+#
+# # -----------------------------
+# # ⭐ CALL ZONE BACKGROUND (GREEN)
+# # -----------------------------
+# AddCloud(
+#     if UPTREND then low else Double.NaN,
+#     if UPTREND then high else Double.NaN,
+#     CreateColor(0, 60, 0),   # CALL ZONE Green
+#     Color.BLACK
+# );
+#
+# AddChartBubble(
+#     UPTREND and HL,
+#     low,
+#     "CALL ZONE",
+#     Color.GREEN,
+#     no
+# );
+#
+# # -----------------------------
+# # ⭐ PUT ZONE BACKGROUND (REAL RED)
+# # -----------------------------
+# AddCloud(
+#     if DOWNTREND then high else Double.NaN,
+#     if DOWNTREND then low else Double.NaN,
+#     CreateColor(255, 0, 0),  # REAL RED
+#     CreateColor(80, 0, 0)
+# );
+#
+# AddChartBubble(
+#     DOWNTREND and LL,
+#     high,
+#     "PUT ZONE",
+#     Color.RED,
+#     yes
+# );
+#
+# # -----------------------------
+# # 5️⃣ PLOT EMAs
+# # -----------------------------
+# plot EMA_9 = emaFast;
+# EMA_9.SetDefaultColor(Color.BLUE);
+# EMA_9.SetLineWeight(2);
+#
+# plot EMA_21 = emaSlow;
+# EMA_21.SetDefaultColor(Color.RED);
+# EMA_21.SetLineWeight(2);
+#
+# # -----------------------------
+# # 6️⃣ CALL & PUT BUBBLES
+# # -----------------------------
+# AddChartBubble(CALL_OK, emaFast + (TickSize() * 4), "CALL", Color.GREEN, yes);
+# AddChartBubble(PUT_OK , emaFast - (TickSize() * 4), "PUT", Color.RED, no);
+#
+# # -----------------------------
+# # 7️⃣ ALERTS
+# # -----------------------------
+# Alert(CALL_OK and alertEnabled, "CALL CONFIRMED — MTF Bullish", Alert.BAR, Sound.Ding);
+# Alert(PUT_OK  and alertEnabled, "PUT CONFIRMED — MTF Bearish",  Alert.BAR, Sound.Ding);
+#
+# # -----------------------------
+# # 8️⃣ TREND DASHBOARD LABELS (TOP LEFT CORNER)
+# # -----------------------------
+# AddLabel(yes, "30m TF: " + (if bull30 then "CALL" else if bear30 then "PUT" else "WAIT"),
+#         if bull30 then Color.GREEN else if bear30 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes, "5m TF:  " + (if bull5 then "CALL" else if bear5 then "PUT" else "WAIT"),
+#         if bull5 then Color.GREEN else if bear5 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes, "1m TF:  " + (if bull1 then "CALL" else if bear1 then "PUT" else "WAIT"),
+#         if bull1 then Color.GREEN else if bear1 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes,
+#         if CALL_OK then "🟩 CALL ENTRY READY"
+#         else if PUT_OK then "🟥 PUT ENTRY READY"
+#         else "⚠ NO TRADE",
+#         if CALL_OK then Color.GREEN else if PUT_OK then Color.RED else Color.YELLOW);
+#
+# # -----------------------------
+# # 9️⃣ RSI + VWAP LABELS
+# # -----------------------------
+# AddLabel(yes, "RSI: " + Round(rsi, 0),
+#     if rsi > 55 then Color.GREEN else if rsi < 45 then Color.RED else Color.WHITE);
+#
+# AddLabel(yes, "VWAP: " + Round(vwapLine, 2),
+#     CreateColor(120, 120, 120));
+#
+# # =====================================================================
+# # 💡 "Trade the alignment — Not the noise." — Sybest LLC
+# # =====================================================================
+
+
+# ======================================================================================== PART 44
+#
+# #[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[[ PART 3 WITH HL2
+#
+# # ⚡ SYBEST TREND CONFIRMATION SYSTEM — EMA 9/21 DAY TRADER EDITION
+# # =====================================================================
+# # Designed by: Dr. Stanley Njoku / Sybest LLC
+# # Purpose: CALL/PUT confirmations + MTF Trend + HH/HL + LH/LL Detection
+# # =====================================================================
+#
+# input fastLength = 9;
+# input slowLength = 21;
+# input rsiLength = 14;
+# input alertEnabled = yes;
+#
+# # -----------------------------
+# # 1️⃣ CORE CALCULATIONS (1-MIN)
+# # -----------------------------
+# def price = close;
+# def emaFast = ExpAverage(price, fastLength);
+# def emaSlow = ExpAverage(price, slowLength);
+# def rsi = RSI(length = rsiLength);
+# def vwapLine = VWAP();
+#
+# def bull1 = emaFast > emaSlow;
+# def bear1 = emaFast < emaSlow;
+#
+# # -----------------------------
+# # 2️⃣ MULTI-TIMEFRAME (5m + 30m)
+# # -----------------------------
+# def c5  = close(period = AggregationPeriod.FIVE_MIN);
+# def c30 = close(period = AggregationPeriod.THIRTY_MIN);
+#
+# def emaFast5 = ExpAverage(c5, fastLength);
+# def emaSlow5 = ExpAverage(c5, slowLength);
+# def bull5 = emaFast5 > emaSlow5;
+# def bear5 = emaFast5 < emaSlow5;
+#
+# def emaFast30 = ExpAverage(c30, fastLength);
+# def emaSlow30 = ExpAverage(c30, slowLength);
+# def bull30 = emaFast30 > emaSlow30;
+# def bear30 = emaFast30 < emaSlow30;
+#
+# # -----------------------------
+# # 3️⃣ STRICT CALL / PUT LOGIC
+# # -----------------------------
+# def CALL_OK =
+#     bull1 and bull5 and bull30 and
+#     price > vwapLine and
+#     rsi > 55;
+#
+# def PUT_OK =
+#     bear1 and bear5 and bear30 and
+#     price < vwapLine and
+#     rsi < 45;
+#
+# # -----------------------------
+# # ⭐ 4️⃣ TREND STRUCTURE (HH / HL / LH / LL)
+# # -----------------------------
+# def HH = high > high[1] and high[1] > high[2];     # Higher High
+# def HL = low > low[1] and low[1] < low[2];         # Higher Low
+#
+# def LH = high < high[1] and high[1] < high[2];     # Lower High
+# def LL = low < low[1] and low[1] > low[2];         # Lower Low
+#
+# def UPTREND = HH or HL;
+# def DOWNTREND = LH or LL;
+#
+# # -----------------------------
+# # ⭐ HH & LL BUBBLES
+# # -----------------------------
+# AddChartBubble(HH, high, "HH", Color.CYAN, yes);
+# AddChartBubble(LL, low, "LL", Color.RED, no);
+#
+# # -----------------------------
+# # ⭐ HL SUPPORT LINE (Light Gray)
+# # -----------------------------
+# plot HL_SUPPORT = if HL then low else Double.NaN;
+# HL_SUPPORT.SetLineWeight(3);
+# HL_SUPPORT.SetDefaultColor(CreateColor(180,180,180));
+#
+# # =====================================================================
+# # ⭐ NEW: HL SNIPER DETECTION (ONLY ADDITION — NO OTHER CHANGES)
+# # =====================================================================
+#
+# # Pivot-based HL Sniper logic
+# def PivotLow_Sniper = low[1] < low[2] and low[1] < low;
+#
+# rec LastPivotLow_Sniper =
+#     if PivotLow_Sniper then low[1]
+#     else if IsNaN(LastPivotLow_Sniper[1]) then low
+#     else LastPivotLow_Sniper[1];
+#
+# def HL_Sniper = PivotLow_Sniper and low[1] > LastPivotLow_Sniper[1];
+#
+# # Bubble
+# AddChartBubble(
+#     HL_Sniper,
+#     low[1],
+#     "HL",
+#     Color.LIGHT_GREEN,
+#     no
+# );
+#
+# # Sniper line
+# plot HL_Sniper_Line =
+#     if HL_Sniper then low[1] else Double.NaN;
+# HL_Sniper_Line.SetDefaultColor(CreateColor(150,150,150));
+# HL_Sniper_Line.SetLineWeight(2);
+#
+# # =====================================================================
+# # END HL SNIPER INSERT
+# # =====================================================================
+#
+# # -----------------------------
+# # ⭐ CALL ZONE BACKGROUND (GREEN)
+# # -----------------------------
+# AddCloud(
+#     if UPTREND then low else Double.NaN,
+#     if UPTREND then high else Double.NaN,
+#     CreateColor(0, 60, 0),   # CALL ZONE Green
+#     Color.BLACK
+# );
+#
+# AddChartBubble(
+#     UPTREND and HL,
+#     low,
+#     "CALL ZONE",
+#     Color.GREEN,
+#     no
+# );
+#
+# # -----------------------------
+# # ⭐ PUT ZONE BACKGROUND (REAL RED)
+# # -----------------------------
+# AddCloud(
+#     if DOWNTREND then high else Double.NaN,
+#     if DOWNTREND then low else Double.NaN,
+#     CreateColor(255, 0, 0),  # REAL RED
+#     CreateColor(80, 0, 0)
+# );
+#
+# AddChartBubble(
+#     DOWNTREND and LL,
+#     high,
+#     "PUT ZONE",
+#     Color.RED,
+#     yes
+# );
+#
+# # -----------------------------
+# # 5️⃣ PLOT EMAs
+# # -----------------------------
+# plot EMA_9 = emaFast;
+# EMA_9.SetDefaultColor(Color.BLUE);
+# EMA_9.SetLineWeight(2);
+#
+# plot EMA_21 = emaSlow;
+# EMA_21.SetDefaultColor(Color.RED);
+# EMA_21.SetLineWeight(2);
+#
+# # -----------------------------
+# # 6️⃣ CALL & PUT BUBBLES
+# # -----------------------------
+# AddChartBubble(CALL_OK, emaFast + (TickSize() * 4), "CALL", Color.GREEN, yes);
+# AddChartBubble(PUT_OK , emaFast - (TickSize() * 4), "PUT", Color.RED, no);
+#
+# # -----------------------------
+# # 7️⃣ ALERTS
+# # -----------------------------
+# Alert(CALL_OK and alertEnabled, "CALL CONFIRMED — MTF Bullish", Alert.BAR, Sound.Ding);
+# Alert(PUT_OK  and alertEnabled, "PUT CONFIRMED — MTF Bearish",  Alert.BAR, Sound.Ding);
+#
+# # -----------------------------
+# # 8️⃣ TREND DASHBOARD LABELS
+# # -----------------------------
+# AddLabel(yes, "30m TF: " + (if bull30 then "CALL" else if bear30 then "PUT" else "WAIT"),
+#         if bull30 then Color.GREEN else if bear30 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes, "5m TF:  " + (if bull5 then "CALL" else if bear5 then "PUT" else "WAIT"),
+#         if bull5 then Color.GREEN else if bear5 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes, "1m TF:  " + (if bull1 then "CALL" else if bear1 then "PUT" else "WAIT"),
+#         if bull1 then Color.GREEN else if bear1 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes,
+#         if CALL_OK then "🟩 CALL ENTRY READY"
+#         else if PUT_OK then "🟥 PUT ENTRY READY"
+#         else "⚠ NO TRADE",
+#         if CALL_OK then Color.GREEN else if PUT_OK then Color.RED else Color.YELLOW);
+#
+# # -----------------------------
+# # 9️⃣ RSI + VWAP LABELS
+# # -----------------------------
+# AddLabel(yes, "RSI: " + Round(rsi, 0),
+#     if rsi > 55 then Color.GREEN else if rsi < 45 then Color.RED else Color.WHITE);
+#
+# AddLabel(yes, "VWAP: " + Round(vwapLine, 2),
+#     CreateColor(120, 120, 120));
+#
+# # =====================================================================
+# # 💡 "Trade the alignment — Not the noise." — Sybest LLC
+# # =====================================================================
+
+
+#
+# # SNIPPER ADDED ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]] PART3
+#
+# #GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG PART 55 TAKE PROFIT
+# #GGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGGG PART 55 TAKE PROFIT
+#
+# # ⚡ SYBEST TREND CONFIRMATION SYSTEM — EMA 9/21 DAY TRADER EDITION
+# # =====================================================================
+# # Designed by: Dr. Stanley Njoku / Sybest LLC
+# # Purpose: CALL/PUT confirmations + MTF Trend + HH/HL + LH/LL Detection
+# # =====================================================================
+#
+# input fastLength = 9;
+# input slowLength = 21;
+# input rsiLength = 14;
+# input alertEnabled = yes;
+#
+# # -----------------------------
+# # 1️⃣ CORE CALCULATIONS (1-MIN)
+# # -----------------------------
+# def price = close;
+# def emaFast = ExpAverage(price, fastLength);
+# def emaSlow = ExpAverage(price, slowLength);
+# def rsi = RSI(length = rsiLength);
+# def vwapLine = VWAP();
+#
+# def bull1 = emaFast > emaSlow;
+# def bear1 = emaFast < emaSlow;
+#
+# # -----------------------------
+# # 2️⃣ MULTI-TIMEFRAME (5m + 30m)
+# # -----------------------------
+# def c5  = close(period = AggregationPeriod.FIVE_MIN);
+# def c30 = close(period = AggregationPeriod.THIRTY_MIN);
+#
+# def emaFast5 = ExpAverage(c5, fastLength);
+# def emaSlow5 = ExpAverage(c5, slowLength);
+# def bull5 = emaFast5 > emaSlow5;
+# def bear5 = emaFast5 < emaSlow5;
+#
+# def emaFast30 = ExpAverage(c30, fastLength);
+# def emaSlow30 = ExpAverage(c30, slowLength);
+# def bull30 = emaFast30 > emaSlow30;
+# def bear30 = emaFast30 < emaSlow30;
+#
+# # -----------------------------
+# # 3️⃣ STRICT CALL / PUT LOGIC
+# # -----------------------------
+# def CALL_OK =
+#     bull1 and bull5 and bull30 and
+#     price > vwapLine and
+#     rsi > 55;
+#
+# def PUT_OK =
+#     bear1 and bear5 and bear30 and
+#     price < vwapLine and
+#     rsi < 45;
+#
+# # -----------------------------
+# # ⭐ 4️⃣ TREND STRUCTURE (HH / HL / LH / LL)
+# # -----------------------------
+# def HH = high > high[1] and high[1] > high[2];
+# def HL = low > low[1] and low[1] < low[2];
+#
+# def LH = high < high[1] and high[1] < high[2];
+# def LL = low < low[1] and low[1] > low[2];
+#
+# def UPTREND = HH or HL;
+# def DOWNTREND = LH or LL;
+#
+# # HH & LL bubbles
+# AddChartBubble(HH, high, "HH", Color.CYAN, yes);
+# AddChartBubble(LL, low, "LL", Color.RED, no);
+#
+# # HL line
+# plot HL_SUPPORT = if HL then low else Double.NaN;
+# HL_SUPPORT.SetLineWeight(3);
+# HL_SUPPORT.SetDefaultColor(CreateColor(180,180,180));
+#
+# # =====================================================================
+# # ⭐ NEW: HL SNIPER DETECTION (ONLY ADDITION)
+# # =====================================================================
+#
+# # Pivot low
+# def PivotLow_Sniper = low[1] < low[2] and low[1] < low;
+#
+# # Track previous pivot low
+# rec LastPivotLow_Sniper =
+#     if PivotLow_Sniper then low[1]
+#     else if IsNaN(LastPivotLow_Sniper[1]) then low
+#     else LastPivotLow_Sniper[1];
+#
+# # HL Sniper signal
+# def HL_Sniper = PivotLow_Sniper and low[1] > LastPivotLow_Sniper[1];
+#
+# # HL Sniper Bubble
+# AddChartBubble(HL_Sniper, low[1], "HL", Color.LIGHT_GREEN, no);
+#
+# # HL Sniper line
+# plot HL_Sniper_Line = if HL_Sniper then low[1] else Double.NaN;
+# HL_Sniper_Line.SetDefaultColor(CreateColor(150,150,150));
+# HL_Sniper_Line.SetLineWeight(2);
+#
+# # =====================================================================
+# # ⭐ NEW: TAKE PROFIT (TP) & STOP LOSS (SL)
+# # Based on: D (SL) and E (TP)
+# # =====================================================================
+#
+# # Track previous HH for Take Profit
+# rec PrevHH =
+#     if HH then high
+#     else PrevHH[1];
+#
+# # STOP LOSS — HL – TickSize()
+# plot SL_Line =
+#     if HL_Sniper then low[1] - TickSize()
+#     else Double.NaN;
+# SL_Line.SetDefaultColor(Color.RED);
+# SL_Line.SetLineWeight(2);
+# SL_Line.SetStyle(Curve.SHORT_DASH);      # <─ ▬ ─ ▬ ─ ▬
+# AddChartBubble(HL_Sniper, SL_Line, "SL", Color.RED, no);
+#
+# # TAKE PROFIT — Previous HH
+# plot TP_Line =
+#     if HL_Sniper then PrevHH
+#     else Double.NaN;
+# TP_Line.SetDefaultColor(Color.GREEN);
+# TP_Line.SetLineWeight(2);
+# TP_Line.SetStyle(Curve.SHORT_DASH);      # <─ ▬ ─ ▬ ─ ▬
+# AddChartBubble(HL_Sniper, TP_Line, "TP", Color.GREEN, yes);
+#
+# # =====================================================================
+# # 5️⃣ CALL ZONE
+# # =====================================================================
+# AddCloud(
+#     if DOWNTREND then high else Double.NaN,
+#     if DOWNTREND then low else Double.NaN,
+#     CreateColor(255, 80, 80),
+#     CreateColor(80, 0, 0)
+# );
+#
+#
+#
+# AddChartBubble(UPTREND and HL, low, "CALL ZONE", Color.GREEN, no);
+#
+# # =====================================================================
+# # 6️⃣ PUT ZONE
+# # =====================================================================
+# AddCloud(
+#     if DOWNTREND then high else Double.NaN,
+#     if DOWNTREND then low else Double.NaN,
+#     Color.RED,
+#     CreateColor(80, 0, 0)
+# );
+#
+# AddChartBubble(DOWNTREND and LL, high, "PUT ZONE", Color.RED, yes);
+#
+# # =====================================================================
+# # 7️⃣ EMAs
+# # =====================================================================
+# plot EMA_9 = emaFast;
+# EMA_9.SetDefaultColor(Color.BLUE);
+# EMA_9.SetLineWeight(2);
+#
+# plot EMA_21 = emaSlow;
+# EMA_21.SetDefaultColor(Color.RED);
+# EMA_21.SetLineWeight(2);
+#
+# # =====================================================================
+# # 8️⃣ CALL/PUT SIGNAL BUBBLES
+# # =====================================================================
+# AddChartBubble(CALL_OK, emaFast + (TickSize() * 4), "CALL", Color.GREEN, yes);
+# AddChartBubble(PUT_OK , emaFast - (TickSize() * 4), "PUT", Color.RED, no);
+#
+# # =====================================================================
+# # 9️⃣ ALERTS
+# # =====================================================================
+# Alert(CALL_OK and alertEnabled, "CALL CONFIRMED — MTF Bullish", Alert.BAR, Sound.Ding);
+# Alert(PUT_OK  and alertEnabled, "PUT CONFIRMED — MTF Bearish",  Alert.BAR, Sound.Ding);
+#
+# # =====================================================================
+# # 🔟 DASHBOARD LABELS
+# # =====================================================================
+# AddLabel(yes, "30m TF: " + (if bull30 then "CALL" else if bear30 then "PUT" else "WAIT"),
+#         if bull30 then Color.GREEN else if bear30 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes, "5m TF:  " + (if bull5 then "CALL" else if bear5 then "PUT" else "WAIT"),
+#         if bull5 then Color.GREEN else if bear5 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes, "1m TF:  " + (if bull1 then "CALL" else if bear1 then "PUT" else "WAIT"),
+#         if bull1 then Color.GREEN else if bear1 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes,
+#         if CALL_OK then "🟩 CALL ENTRY READY"
+#         else if PUT_OK then "🟥 PUT ENTRY READY"
+#         else "⚠ NO TRADE",
+#         if CALL_OK then Color.GREEN else if PUT_OK then Color.RED else Color.YELLOW);
+#
+# # =====================================================================
+# # 1️⃣1️⃣ RSI + VWAP LABELS
+# # =====================================================================
+# AddLabel(yes, "RSI: " + Round(rsi, 0),
+#     if rsi > 55 then Color.GREEN else if rsi < 45 then Color.RED else Color.WHITE);
+#
+# AddLabel(yes, "VWAP: " + Round(vwapLine, 2),
+#     CreateColor(120, 120, 120));
+#
+# # =====================================================================
+# # 💡 "Trade the alignment — Not the noise." — Sybest LLC
+# # =====================================================================
+#
+# # =====================================================================
+# # MODULE D — ULTRA-STRICT SNIPER CALL SYSTEM (Add-On Only)
+# # Designed by: Dr. Stanley Njoku / Sybest LLC
+# # =====================================================================
+#
+# # 1️⃣ Confirm prerequisites
+# def sniper_HL = HL;
+# def sniper_HH = HH;
+#
+# # 2️⃣ EMA directional alignment
+# def sniper_EMA_Flip = emaFast > emaSlow;
+#
+# # 3️⃣ Price above EMA 9
+# def sniper_Price_Strength = close > emaFast;
+#
+# # 4️⃣ CALL ZONE must be active
+# def sniper_CALLZONE = UPTREND;
+#
+# # 5️⃣ VWAP support
+# def sniper_VWAP = close > vwapLine;
+#
+# # 6️⃣ Strong bullish candle (body > 50% of candle)
+# def sniper_Strong_Candle =
+#     (close - open) > 0 and
+#     (close - open) >= 0.5 * (high - low);
+#
+# # 7️⃣ Combine ultra-strict conditions
+# def SNIPER_CALL =
+#     sniper_HL and
+#     sniper_HH and
+#     sniper_EMA_Flip and
+#     sniper_Price_Strength and
+#     sniper_CALLZONE and
+#     sniper_VWAP and
+#     sniper_Strong_Candle;
+#
+# # 8️⃣ Bubble annotation
+# AddChartBubble(
+#     SNIPER_CALL,
+#     low - (TickSize() * 4),
+#     "SNIPER CALL",
+#     Color.CYAN,
+#     no
+# );
+#
+# # 9️⃣ Optional alert
+# Alert(
+#     SNIPER_CALL,
+#     "ULTRA-STRICT SNIPER CALL ENTRY",
+#     Alert.BAR,
+#     Sound.Ring
+# );
+
+
+
+# # ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]] CEMMENTING TO ADD PRE-MARKET
+#
+# #FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF SNIPPER AND CONFIRMATION PART 2
+#
+# # # ⚡ SYBEST TREND CONFIRMATION SYSTEM — EMA 9/21 DAY TRADER EDITION
+# # # =====================================================================
+# # # Designed by: Dr. Stanley Njoku / Sybest LLC
+# # # Purpose: CALL/PUT confirmations + MTF Trend + HH/HL + LH/LL Detection
+# # # =====================================================================
+# #
+# input fastLength = 9;
+# input slowLength = 21;
+# input rsiLength = 14;
+# input alertEnabled = yes;
+#
+# # -----------------------------
+# # 1️⃣ CORE CALCULATIONS (1-MIN)
+# # -----------------------------
+# def price = close;
+# def emaFast = ExpAverage(price, fastLength);
+# def emaSlow = ExpAverage(price, slowLength);
+# def rsi = RSI(length = rsiLength);
+# def vwapLine = VWAP();
+#
+# def bull1 = emaFast > emaSlow;
+# def bear1 = emaFast < emaSlow;
+#
+# # -----------------------------
+# # 2️⃣ MULTI-TIMEFRAME (5m + 30m)
+# # -----------------------------
+# def c5  = close(period = AggregationPeriod.FIVE_MIN);
+# def c30 = close(period = AggregationPeriod.THIRTY_MIN);
+#
+# def emaFast5 = ExpAverage(c5, fastLength);
+# def emaSlow5 = ExpAverage(c5, slowLength);
+# def bull5 = emaFast5 > emaSlow5;
+# def bear5 = emaFast5 < emaSlow5;
+#
+# def emaFast30 = ExpAverage(c30, fastLength);
+# def emaSlow30 = ExpAverage(c30, slowLength);
+# def bull30 = emaFast30 > emaSlow30;
+# def bear30 = emaFast30 < emaSlow30;
+#
+# # -----------------------------
+# # 3️⃣ STRICT CALL / PUT LOGIC
+# # -----------------------------
+# def CALL_OK =
+#     bull1 and bull5 and bull30 and
+#     price > vwapLine and
+#     rsi > 55;
+#
+# def PUT_OK =
+#     bear1 and bear5 and bear30 and
+#     price < vwapLine and
+#     rsi < 45;
+#
+# # -----------------------------
+# # ⭐ 4️⃣ TREND STRUCTURE (HH / HL / LH / LL)
+# # -----------------------------
+# def HH = high > high[1] and high[1] > high[2];     # Higher High
+# def HL = low > low[1] and low[1] < low[2];          # Higher Low
+#
+# def LH = high < high[1] and high[1] < high[2];      # Lower High
+# def LL = low < low[1] and low[1] > low[2];          # Lower Low
+#
+# def UPTREND = HH or HL;
+# def DOWNTREND = LH or LL;
+#
+# # -----------------------------
+# # ⭐ HH & LL BUBBLES
+# # -----------------------------
+# AddChartBubble(HH, high, "HH", Color.CYAN, yes);
+# AddChartBubble(LL, low, "LL", Color.RED, no);
+#
+#
+# # ⭐ HL BUBBLE (ADDED – NEW)
+# AddChartBubble(HL, low, "HL", Color.LIGHT_GREEN, no);
+#
+# # -----------------------------
+# # ⭐ HL SUPPORT LINE (Light Gray)
+# # -----------------------------
+# plot HL_SUPPORT = if HL then low else Double.NaN;
+# HL_SUPPORT.SetLineWeight(3);
+# HL_SUPPORT.SetDefaultColor(CreateColor(180,180,180));
+#
+# # -----------------------------
+# # ⭐ CALL ZONE BACKGROUND (GREEN)
+# # -----------------------------
+# AddCloud(
+#     if UPTREND then low else Double.NaN,
+#     if UPTREND then high else Double.NaN,
+#     CreateColor(0, 120, 0),      # lighter green (keeps candle low visible)
+#     Color.BLACK
+# );
+#
+# AddChartBubble(
+#     UPTREND and HL,
+#     low,
+#     "CALL ZONE",
+#     Color.GREEN,
+#     no
+# );
+#
+# # -----------------------------
+# # ⭐ PUT ZONE BACKGROUND (REAL RED)
+# # -----------------------------
+# AddCloud(
+#     if DOWNTREND then high else Double.NaN,
+#     if DOWNTREND then low else Double.NaN,
+#     Color.RED,
+#     CreateColor(80, 0, 0)
+# );
+#
+# AddChartBubble(
+#     DOWNTREND and LL,
+#     high,
+#     "PUT ZONE",
+#     Color.RED,
+#     yes
+# );
+#
+# # -----------------------------
+# # 5️⃣ PLOT EMAs
+# # -----------------------------
+# plot EMA_9 = emaFast;
+# EMA_9.SetDefaultColor(Color.BLUE);
+# EMA_9.SetLineWeight(2);
+#
+# plot EMA_21 = emaSlow;
+# EMA_21.SetDefaultColor(Color.RED);
+# EMA_21.SetLineWeight(2);
+#
+# # -----------------------------
+# # 6️⃣ CALL & PUT BUBBLES
+# # -----------------------------
+# AddChartBubble(CALL_OK, emaFast + (TickSize() * 4), "CALL", Color.GREEN, yes);
+# AddChartBubble(PUT_OK , emaFast - (TickSize() * 4), "PUT", Color.RED, no);
+#
+# # -----------------------------
+# # 7️⃣ ALERTS
+# # -----------------------------
+# Alert(CALL_OK and alertEnabled, "CALL CONFIRMED — MTF Bullish", Alert.BAR, Sound.Ding);
+# Alert(PUT_OK  and alertEnabled, "PUT CONFIRMED — MTF Bearish",  Alert.BAR, Sound.Ding);
+#
+# # -----------------------------
+# # 8️⃣ TREND DASHBOARD LABELS (TOP LEFT CORNER)
+# # -----------------------------
+# AddLabel(yes, "30m TF: " + (if bull30 then "CALL" else if bear30 then "PUT" else "WAIT"),
+#         if bull30 then Color.GREEN else if bear30 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes, "5m TF:  " + (if bull5 then "CALL" else if bear5 then "PUT" else "WAIT"),
+#         if bull5 then Color.GREEN else if bear5 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes, "1m TF:  " + (if bull1 then "CALL" else if bear1 then "PUT" else "WAIT"),
+#         if bull1 then Color.GREEN else if bear1 then Color.RED else Color.YELLOW);
+#
+# AddLabel(yes,
+#         if CALL_OK then "🟩 CALL ENTRY READY"
+#         else if PUT_OK then "🟥 PUT ENTRY READY"
+#         else "⚠ NO TRADE",
+#         if CALL_OK then Color.GREEN else if PUT_OK then Color.RED else Color.YELLOW);
+#
+# # -----------------------------
+# # 9️⃣ RSI + VWAP LABELS
+# # -----------------------------
+# AddLabel(yes, "RSI: " + Round(rsi, 0),
+#     if rsi > 55 then Color.GREEN else if rsi < 45 then Color.RED else Color.WHITE);
+#
+# AddLabel(yes, "VWAP: " + Round(vwapLine, 2),
+#     CreateColor(120, 120, 120));
+#
+# # =====================================================================
+# # 💡 "Trade the alignment — Not the noise." — Sybest LLC
+# # =====================================================================
+#
+#
+#
+# # =====================================================================
+# # MODULE D — ULTRA-STRICT SNIPER CALL SYSTEM (ADD-ON ONLY)
+# # Designed by: Dr. Stanley Njoku / Sybest LLC
+# # =====================================================================
+#
+# # 1️⃣ Confirm HL + HH structure
+# def sniper_HL = HL;
+# def sniper_HH = HH;
+#
+# # 2️⃣ EMA directional alignment (trend must actually flip)
+# def sniper_EMA_Flip = emaFast > emaSlow;
+#
+# # 3️⃣ Price strength (close above EMA9)
+# def sniper_Price_Strength = close > emaFast;
+#
+# # 4️⃣ Sniper requires CALL ZONE to be active
+# def sniper_CALLZONE = UPTREND;
+#
+# # 5️⃣ Price must be above VWAP
+# def sniper_VWAP = close > vwapLine;
+#
+# # 6️⃣ Strong bullish candle (body >= 50% of full range)
+# def sniper_Strong_Candle =
+#     (close - open) > 0 and
+#     (close - open) >= 0.5 * (high - low);
+#
+# # 7️⃣ SNIPER CALL = ALL conditions must be true
+# def SNIPER_CALL =
+#     sniper_HL and
+#     sniper_HH and
+#     sniper_EMA_Flip and
+#     sniper_Price_Strength and
+#     sniper_CALLZONE and
+#     sniper_VWAP and
+#     sniper_Strong_Candle;
+#
+# # 8️⃣ SNIPER CALL bubble
+# AddChartBubble(
+#     SNIPER_CALL,
+#     low - (TickSize() * 4),
+#     "SNIPER CALL",
+#     Color.CYAN,
+#     no
+# );
+#
+# # 9️⃣ SNIPER CALL alert
+# Alert(
+#     SNIPER_CALL,
+#     "ULTRA-STRICT SNIPER CALL ENTRY",
+#     Alert.BAR,
+#     Sound.Ring
+# );
+#
+#
+
+
+# # ===============================================================================================
+#
+# # =======================================================
+# #  SYBEST – PREVIOUS DAY HIGH & LOW (Dashed Line Version)
+# # =======================================================
+#
+# input showOnlyToday = yes;
+# input showLabels    = yes;
+#
+# # ---- Yesterday's Levels ----
+# def priorHigh = high(period = AggregationPeriod.DAY)[1];
+# def priorLow  = low(period = AggregationPeriod.DAY)[1];
+#
+# # ---- Limit display to today only ----
+# def isToday = GetDay() == GetLastDay();
+# def showLines = if showOnlyToday then isToday else 1;
+#
+# # ---- Previous Day High (Dashed) ----
+# plot PDH = if showLines then priorHigh else Double.NaN;
+# PDH.SetDefaultColor(Color.GREEN);
+# PDH.SetLineWeight(3);
+# PDH.SetStyle(Curve.SHORT_DASH);     # 🔥 dashed line
+# PDH.HideTitle();
+#
+# # ---- Previous Day Low (Dashed) ----
+# plot PDL = if showLines then priorLow else Double.NaN;
+# PDL.SetDefaultColor(Color.RED);
+# PDL.SetLineWeight(3);
+# PDL.SetStyle(Curve.SHORT_DASH);     # 🔥 dashed line
+# PDL.HideTitle();
+#
+# # ---- Optional: Right-side labels ----
+# AddChartBubble(
+#     showLabels and IsNaN(PDH[-1]) and showLines,
+#     priorHigh,
+#     "PDH: " + AsText(priorHigh),
+#     Color.GREEN,
+#     no
+# );
+#
+# AddChartBubble(
+#     showLabels and IsNaN(PDL[-1]) and showLines,
+#     priorLow,
+#     "PDL: " + AsText(priorLow),
+#     Color.RED,
+#     no
+# );

@@ -33,6 +33,30 @@ menu = st.sidebar.radio(
      ]  # ✅ add this line
 )
 
+
+# =========================================== EXCHANGE NOT TRADE ON
+st.sidebar.markdown('---')
+with st.sidebar.expander ("### ✅ Best Exchanges for CALLS"):
+
+        st.markdown("""
+    **Use these:**
+    - **C (CBOE)** – Fastest fills  
+    - **M (MIAX)** – Cheaper fills  
+    - **W (C2)** – Tight mid-fills  
+    
+    **Avoid these:**
+    - **I (BOX)**  
+    - **Z (BATS/BZX)**  
+    - **H (NASDAQ BX)**  
+    - **G (GEMX/GEMINI)**  
+    - **E (MERCURY)**
+        """)
+
+
+
+
+
+
 # ======================================================================TRADING PERIOD
 import datetime as dt
 
@@ -4280,6 +4304,122 @@ def power_roi_daytrading():
         plt.xticks(rotation=90)
 
         st.pyplot(fig4)
+
+        # ============================================================ DAILY GAIN AND LOSS
+        # == DAILY GAIN AND LOSS
+        # ==================================================================================
+        # ========================= ENDS HERE=================
+        # ========================= DAILY PROFIT / LOSS =========================
+
+        # ========================= ENDS HERE=================
+        # ---------- DAILY PROFIT / LOSS + TRADE COUNT (STACKED + 90° LABELS) ----------
+        st.subheader("📆 Daily Profit / Loss & Trade Count")
+
+        import matplotlib.patches as mpatches
+        from matplotlib.lines import Line2D
+
+        # 1️⃣ Parse Date column (handles mixed formats)
+        df["Date"] = pd.to_datetime(
+            df["Date"].astype(str).str.strip(),
+            format="mixed",
+            errors="coerce"
+        )
+
+        # Keep only rows with a valid Date
+        df_dates = df.dropna(subset=["Date"]).copy()
+
+        # 2️⃣ Group by Date → sum P/L and count trades
+        daily_stats = (
+            df_dates.groupby("Date", as_index=False)
+            .agg({
+                "Realized P/L $": "sum",
+                "Symbol": "count"
+            })
+            .rename(columns={"Symbol": "Trade Count"})
+            .sort_values("Date")
+        )
+
+        # 3️⃣ Plot the chart
+        if not daily_stats.empty:
+            fig5, ax5 = plt.subplots(figsize=(12, 6))
+
+            x_labels = daily_stats["Date"].dt.strftime("%Y-%m-%d")
+            pl_values = daily_stats["Realized P/L $"]
+            trade_counts = daily_stats["Trade Count"]
+            x_positions = range(len(x_labels))
+
+            # Colors
+            bar_colors = pl_values.apply(lambda x: "#2ecc71" if x > 0 else "#e74c3c")
+
+            # Bars = P/L per day
+            bars = ax5.bar(x_positions, pl_values, color=bar_colors)
+
+            ax5.axhline(0, color="gray", linestyle="--", linewidth=1)
+            ax5.set_xlabel("Date")
+            ax5.set_ylabel("Profit / Loss ($)")
+            ax5.set_title("Daily Profit / Loss with Trade Count")
+            ax5.grid(alpha=0.2)
+
+            # 4️⃣ SHOW ALL DATE LABELS ROTATED 90°
+            ax5.set_xticks(x_positions)
+            ax5.set_xticklabels(x_labels, rotation=90, ha="center")  # <---- HERE
+
+            # 5️⃣ Line for trade count
+            ax6 = ax5.twinx()
+            trade_line, = ax6.plot(
+                x_positions,
+                trade_counts,
+                marker="o",
+                linewidth=2,
+                color="#34495e",
+                label="Trade Count"
+            )
+            ax6.set_ylabel("Number of Trades")
+
+            # 6️⃣ Stacked annotations: amount + (trade count)
+            max_pl = pl_values.max()
+            min_pl = pl_values.min()
+
+            for bar, value, count in zip(bars, pl_values, trade_counts):
+                height = bar.get_height()
+
+                if value >= 0:
+                    y = height + (0.02 * max_pl if max_pl != 0 else 0.5)
+                    va = "bottom"
+                else:
+                    y = height - (0.05 * abs(min_pl) if min_pl != 0 else 0.5)
+                    va = "top"
+
+                ax5.text(
+                    bar.get_x() + bar.get_width() / 2,
+                    y,
+                    f"${value:,.0f}\n({int(count)})",  # <--- parentheses
+                    ha="center",
+                    va=va,
+                    fontsize=9,
+                    color="#2c3e50",
+                    fontweight="bold"
+                )
+
+            # 7️⃣ Legend
+            profit_patch = mpatches.Patch(color="#2ecc71", label="Profit Day")
+            loss_patch = mpatches.Patch(color="#e74c3c", label="Loss Day")
+            ax5.legend(
+                handles=[profit_patch, loss_patch, trade_line],
+                loc="upper left",
+                frameon=True
+            )
+
+            fig5.tight_layout()
+            st.pyplot(fig5)
+
+        else:
+            st.info("No data available to display Daily Profit / Loss & Trade Count.")
+
+        # DAILY P/L ==================================================================================
+
+
+
 
         # GOOD GRAPHS ENDS HERE
         # =======================================================PART 2

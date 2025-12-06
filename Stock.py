@@ -53,7 +53,30 @@ with st.sidebar.expander ("### ✅ Best Exchanges for CALLS"):
         """)
 
 
+# ======================================================
+# TRADING CONFIRMATION SIDEBAR
+# ============================
 
+# # =========================================== EXCHANGES NOT TO TRADE ON
+# st.sidebar.markdown('---')
+#
+# with st.sidebar.expander("### ✅ Best Exchanges for CALLS", expanded=False):
+#     st.sidebar.markdown("""
+# **Use these:**
+# - **C (CBOE)** – Fastest fills
+# - **M (MIAX)** – Cheaper fills
+# - **W (C2)** – Tight mid-fills
+#
+# **Avoid these:**
+# - **I (BOX)**
+# - **Z (BATS/BZX)**
+# - **H (NASDAQ BX)**
+# - **G (GEMX/GEMINI)**
+# - **E (MERCURY)**
+#     """)
+
+# To use it inside your main Streamlit script:
+# intraday_call_strategy_sidebar()
 
 
 
@@ -144,19 +167,122 @@ with st.sidebar.expander("⏱️ Best Trading Time Windows (PST)", expanded=True
         "🟢 <b>12:45–1:00 PM — Power Hour Setup</b><br>Momentum returns into the close.",
         "#27ae60"), unsafe_allow_html=True)
 
+# ========================================================== END HERE
+# ========================================================== END HERE
+# ========================================================== END HERE
 
+    # ======================================================
+    # TRADING CONFIRMATION SIDEBAR
+    # ======================================================
 
+    # ======================================================
+    # TRADING CONFIRMATION SIDEBAR
+    # ======================================================
 
+    st.sidebar.markdown("---")
 
+    # 🔥 Parent container (NOT an expander) — SAFE for nesting expanders
+    strategy_container = st.sidebar.container()
 
+    strategy_container.markdown("### 📈 Sybest Intraday CALL Strategy")
+    strategy_container.markdown("---")
 
+    # ============================================================================================
+    # 1 — OPEN PRICE FILTER
+    # ============================================================================================
+    with strategy_container.expander("🟩 1) OPEN PRICE — Trend Filter", expanded=False):
+        st.markdown("""
+    The open price acts as the **divider line** for the day.
 
+    ### 🔍 How It Helps:
+    - **Price ABOVE Open → Bullish → CALLS only**
+    - **Price BELOW Open → Bearish → NO CALLS**
 
+    ### ✔ Rules for CALL Trader:
+    - Only take **CALLS when price is ABOVE the Open Price**
+    - If price is below the open → **Do NOT enter**
+        """)
 
+    # ============================================================================================
+    # 2 — ENTRY PRICE ALIGNMENT
+    # ============================================================================================
+    with strategy_container.expander("🟦 2) ENTRY PRICE — Trend Alignment", expanded=False):
+        st.markdown("""
+    Your entry price gives baseline confirmation.
 
+    ### ✔ Two Critical Questions:
+    1️⃣ **Is my entry ABOVE the Open Price?**  
+    → If yes, you're aligned with the trend.
 
+    2️⃣ **Is my entry ABOVE the First Candle Breakout (FCH)?**  
+    → If yes, you're buying **strength**, not weakness.
+        """)
 
+    # ============================================================================================
+    # 3 — FIRST CANDLE HIGH/LOW
+    # ============================================================================================
+    with strategy_container.expander("🟧 3) FIRST 1–5 MIN CANDLE — Breakout Zone", expanded=False):
+        st.markdown("""
+    The first candle sets the **battlefield**.
 
+    ### CALL Rules:
+    - 🔥 Break **FIRST CANDLE HIGH → Best sniper CALL entry**
+    - ⚠️ Break **FIRST CANDLE LOW → Avoid calls**
+
+    ### 🚀 Sniper Entry Formula:
+    - Price above Open  
+    - Breaks **First Candle High (FCH)**  
+    - Enter **ABOVE FCH**
+        """)
+
+    # ============================================================================================
+    # 4 — PREVIOUS DAY LEVELS
+    # ============================================================================================
+    with strategy_container.expander("🟪 4) PDH / PDL — Institutional Levels", expanded=False):
+        st.markdown("""
+    PDH/PDL are **major institutional zones**.
+
+    ### Why They Matter:
+    - **PDH = resistance**
+    - **PDL = support**
+
+    ### CALL Rules:
+    - ✔ Break of PDH = **extremely bullish**
+    - ⚠️ Rejection = **WAIT**
+    - 🔍 Trending up but below PDH → look for **FCH breakout**
+
+    📌 **Never buy calls INTO PDH resistance.**
+        """)
+
+    # ============================================================================================
+    # 5 — CURRENT TREND STRUCTURE
+    # ============================================================================================
+    with strategy_container.expander("🟫 5) CURRENT H/L — Trend Structure (HH/HL)", expanded=False):
+        st.markdown("""
+    Real-time highs/lows show **true trend direction**.
+
+    ### CALLS Require:
+    - ✔ Higher Highs (HH)
+    - ✔ Higher Lows (HL)
+
+    ### 🚫 Avoid Calls if:
+    **LL → HL → LH → LL**  
+    → Downtrend → **Avoid CALL entries**.
+        """)
+
+    # ============================================================================================
+    # FINAL CHECKLIST
+    # ============================================================================================
+    with strategy_container.expander("✅ FINAL SNIPER CALL CHECKLIST", expanded=False):
+        st.markdown("""
+    - 🟩 Price ABOVE Open  
+    - 🟦 Entry ABOVE Open  
+    - 🟧 Entry ABOVE FCH  
+    - 🟪 Not buying INTO PDH  
+    - 🟫 Market forming HH + HL  
+        """)
+
+    st.sidebar.caption("Designed by **Dr. Stanley Njoku — Sybest LLC**")
 
 
 
@@ -2291,7 +2417,7 @@ def power_roi_daytrading():
     # --- Top Input Row: Company + Editable Date + Buying Power ---
     col1, col2, col3 = st.columns([1.8, 1, 1])  # ← 3 columns now
     with col1:
-        symbol = st.text_input("🏢 Company / Symbol", "AAPL",
+        symbol = st.text_input("🏢 Company / Symbol", "SPY-12-05-25",
                                key=f"symbol_input_roi_{st.session_state['active_page_key']}")
 
     with col2:
@@ -3571,7 +3697,117 @@ def power_roi_daytrading():
             """
         )
 
-            # Example usage in your main app:
+  # ================================================================================
+  #   STEP CONFOIRMATIOM
+  # ===================================================================================
+  #   import streamlit as st
+
+    def intraday_call_strategy():
+
+        st.title("📈 Sybest Intraday CALL Strategy")
+
+        # ============================================================================================
+        # 1 — OPEN PRICE FILTER
+        # ============================================================================================
+        with st.expander("🟩 1) OPEN PRICE — Trend Filter", expanded=False):
+            st.markdown("""
+            The open price acts as the **divider line** for the day.
+
+            ### 🔍 How It Helps:
+            - **Price ABOVE Open → Bullish → CALLS only**
+            - **Price BELOW Open → Bearish → NO CALLS**
+
+            ### ✔ Rules for CALL Trader:
+            - Only take **CALLS when price is ABOVE the Open Price**
+            - If price is below the open → **Do NOT enter**
+            """)
+
+        # ============================================================================================
+        # 2 — ENTRY PRICE ALIGNMENT
+        # ============================================================================================
+        with st.expander("🟦 2) ENTRY PRICE — Trend Alignment", expanded=False):
+            st.markdown("""
+            Your entry price is the **baseline confirmation**.
+
+            ### ✔ Two Critical Questions:
+            1️⃣ **Is my entry ABOVE the Open Price?**  
+            → If yes, you're aligned with the trend.
+
+            2️⃣ **Is my entry ABOVE the First Candle Breakout (FCH)?**  
+            → If yes, you're buying **strength**, not weakness.
+            """)
+
+        # ============================================================================================
+        # 3 — FIRST CANDLE HIGH/LOW
+        # ============================================================================================
+        with st.expander("🟧 3) FIRST 1–5 MIN CANDLE — Breakout Zone", expanded=False):
+            st.markdown("""
+            The first candle sets the **initial battlefield**.
+
+            ### CALL Rules:
+            - 🔥 Break **FIRST CANDLE HIGH → Best sniper CALL entry**
+            - ⚠️ Break **FIRST CANDLE LOW → Avoid calls (weak day)**
+
+            ### 🚀 Sniper Entry Formula:
+            - Price above Open  
+            - Breaks **First Candle High (FCH)**  
+            - You enter **ABOVE FCH**
+            """)
+
+        # ============================================================================================
+        # 4 — PREVIOUS DAY LEVELS
+        # ============================================================================================
+        with st.expander("🟪 4) PDH / PDL — Institutional Levels", expanded=False):
+            st.markdown("""
+            Previous Day High/Low are **major institutional levels**.
+
+            ### Why They Matter:
+            - **PDH = resistance**
+            - **PDL = support**
+
+            ### CALL Trading Rules:
+            - ✔ Break of PDH = **extremely bullish**
+            - ⚠️ Rejection at PDH = **WAIT — expect pullback**
+            - 🔍 Trending up but below PDH → wait for **FCH breakout**
+
+            📌 **NEVER buy calls into PDH resistance.**
+            """)
+
+        # ============================================================================================
+        # 5 — CURRENT HIGH/LOW TREND STRUCTURE
+        # ============================================================================================
+        with st.expander("🟫 5) CURRENT H/L — Trend Structure (HH/HL)", expanded=False):
+            st.markdown("""
+            Real-time highs and lows show **true trend direction**.
+
+            ### CALLS Require:
+            - ✔ Higher Highs (HH)
+            - ✔ Higher Lows (HL)
+
+            ### 🚫 No CALLS if you see:
+            **LL → HL → LH → LL**  
+            → Downtrend → **Avoid CALL entries**.
+            """)
+
+        # ============================================================================================
+        # FINAL CHECKLIST
+        # ============================================================================================
+        with st.expander("✅ FINAL SNIPER CALL CHECKLIST", expanded=False):
+            st.markdown("""
+            - 🟩 Price ABOVE Open  
+            - 🟦 Entry ABOVE Open  
+            - 🟧 Entry ABOVE FCH  
+            - 🟪 Not buying INTO PDH  
+            - 🟫 Market forming HH + HL  
+            """)
+
+        st.caption("Designed by **Dr. Stanley Njoku — Sybest LLC**")
+
+    # To use it inside your main Streamlit script:
+    # intraday_call_strategy()
+
+    # ///////////////////////////////////////////////////////////// ENDS HERE
+        # Example usage in your main app:
             # show_sybest_call_framework()
 
     # ]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]
@@ -4036,13 +4272,20 @@ def power_roi_daytrading():
         </div>
         """, unsafe_allow_html=True)
 
-        # Card 3 (second metric) – Avg Contracts
+
+        # P/L PERCENTAGE
+        # ---- NEW: TOTAL P/L PERCENTAGE ----
+        pl_percentage = (total_profit / total_invested * 100) if total_invested > 0 else 0
+
         c3.markdown(f"""
         <div class="metric-card" style="margin-top:10px;">
-            <div class="metric-title">🧮 Avg Contracts per Trade</div>
-            <div class="metric-value">{avg_contracts:.2f}</div>
+            <div class="metric-title">📊 Total Profit/Loss Percent (%) </div>
+            <div class="metric-value {'gain' if pl_percentage >= 0 else 'loss'}">
+                {pl_percentage:.2f}%
+            </div>
         </div>
         """, unsafe_allow_html=True)
+
 
         # Card 4 – Win Rate
         c4.markdown(f"""
@@ -4060,6 +4303,7 @@ def power_roi_daytrading():
         </div>
         """, unsafe_allow_html=True)
 
+
         # Card 5 – Total Gain
         c5.markdown(f"""
         <div class="metric-card">
@@ -4067,6 +4311,16 @@ def power_roi_daytrading():
             <div class="metric-value gain">${total_gain:,.2f}</div>
         </div>
         """, unsafe_allow_html=True)
+
+
+        # Card 5 (second metric) – Avg Contracts
+        c5.markdown(f"""
+        <div class="metric-card" style="margin-top:10px;">
+            <div class="metric-title">🧮 Avg Contracts per Trade</div>
+            <div class="metric-value">{avg_contracts:.2f}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
 
         # Card 6 – Total Loss
         c6.markdown(f"""

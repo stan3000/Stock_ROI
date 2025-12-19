@@ -19,7 +19,7 @@ st.set_page_config(page_title="📈 Stock Trade Intelligence Suite", layout="wid
 # Sidebar Navigation Menu
 # ------------------------------
 st.sidebar.title("🧭 Navigation Menu")
-st.sidebar.write('https://chatgpt.com/c/690bb81c-25e8-8323-b20d-d509e0ebfef8')
+st.sidebar.write('SYBEST LLC EXCLUSIVE - FOR INFORMATION ONLY')
 menu = st.sidebar.radio(
     "Select Page:",
     ["🏦 Single Stock Predictor",
@@ -8432,4 +8432,5 @@ elif menu == "🎯 Best Strike Picker":
 #     "PDL: " + AsText(priorLow),
 #     Color.RED,
 #     no
+
 # );
